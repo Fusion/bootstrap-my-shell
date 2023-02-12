@@ -262,6 +262,15 @@ export NVM_DIR="$HOME/.nvm"
 # haskell
 [ -f "/Users/chris/.ghcup/env" ] && source "/Users/chris/.ghcup/env" # ghcup-env
 
+# khoj because why note <- see what I did there
+[[ $(command -v khoj) ]] && {
+    [[ $(command -v tmux) ]] && {
+      [[ $(ps aux | grep 'kho[j]') == "" ]] && {
+        tmux new-session -d -s khoj 'khoj --no-gui'
+      }
+    }
+}
+
 # Some self referential work
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 alias dottig="GIT_DIR=$HOME/.dotfiles GIT_WORK_TREE=$HOME tig"
