@@ -35,6 +35,7 @@ help() {
 CFR various help items:
 -----------------------
 forgit: interactive git -- \`ga\` etc. (for more: \`aliases\`)
+dotfles: manage dotfiles git repo
 
 EOB
 }
@@ -244,6 +245,12 @@ alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
 [[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm ssh"
 export PATH=~/.local/bin:$PATH
 [[ -d ~/.krew ]] && export PATH="${PATH}:${HOME}/.krew/bin"
+
+# fzf keys
+p=$(which fzf)
+if [[ $? -eq 0 ]]; then
+  while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source /nix/store/k2fd8d3sa9rhnayfxh6ah3lgsbqy8j9d-fzf-0.35.1/bin/../share/fzf/key-bindings.zsh
+fi
 
 # Languages, maybe
 
