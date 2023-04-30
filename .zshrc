@@ -15,6 +15,7 @@ I_WANT_PLUGINS=true
 I_WANT_UPDATES=true
 
 [[ -d /nix ]] || {
+  sudo rm -rf ~/.nix* ~/.env.nix
   sh <(curl -L https://nixos.org/nix/install)
 }
 
@@ -258,7 +259,10 @@ export PATH=~/.local/bin:$PATH
 # fzf keys
 p=$(which fzf)
 if [[ $? -eq 0 ]]; then
-  while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source /nix/store/k2fd8d3sa9rhnayfxh6ah3lgsbqy8j9d-fzf-0.35.1/bin/../share/fzf/key-bindings.zsh
+  sp="$(find /nix/store -maxdepth 1 -type d -name '*fzf*' -not -name '*man')"
+  if [[ "$sp" != "" ]]; then
+    while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh
+  fi
 fi
 
 # Languages, maybe
@@ -311,3 +315,5 @@ dotfilesclone () {
 
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
+
+if [ -e /home/chris/.nix-profile/etc/profile.d/nix.sh ]; then . /home/chris/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
