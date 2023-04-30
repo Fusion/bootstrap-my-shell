@@ -290,12 +290,21 @@ export NVM_DIR="$HOME/.nvm"
 # Some self referential work
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 alias dottig="GIT_DIR=$HOME/.dotfiles GIT_WORK_TREE=$HOME tig"
-[[ -d ~/.dotfiles ]] || {
+dotfilesnew () {
     mkdir -p ~/.dotfiles \
     && dotfiles init \
     && dotfiles config --local status.showUntrackedFiles no \
     && dotfiles add ~/.zshrc \
     && dotfiles commit -m "Initial commit" \
+    && echo "To view tracked files: 'dotfiles ls-files'"
+}
+dotfilesclone () {
+    mkdir -p ~/.dotfiles \
+    && dotfiles init \
+    && dotfiles config --local status.showUntrackedFiles no \
+    && dotfiles remote add origin git@github.com:Fusion/bootstrap-my-shell.git \
+    && rm ~/.zshrc \
+    && dotfiles pull origin main \
     && echo "To view tracked files: 'dotfiles ls-files'"
 }
 
