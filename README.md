@@ -12,6 +12,7 @@ dotfilesclone () {
     && dotfiles remote add origin git@github.com:Fusion/bootstrap-my-shell.git \
     && rm ~/.zshrc \
     && dotfiles pull origin main \
+    && dotfiles branch -m main \
     && echo "To view tracked files: 'dotfiles ls-files'"
 }
 dotfilesclone
