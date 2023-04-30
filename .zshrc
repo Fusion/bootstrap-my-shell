@@ -222,6 +222,12 @@ EOB
 }
 alias ls="exa-wrapper.sh"
 
+# asdf versions manager for many packages and languages
+[ -d $HOME/.asdf ] && {
+    . $HOME/.asdf/asdf.sh
+    fpath=(${ASDF_DIR}/completions $fpath)
+}
+
 # kitty integration
 
 if test -n "$KITTY_INSTALLATION_DIR"; then
