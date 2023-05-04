@@ -213,6 +213,15 @@ vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
 EOB
 }
 
+# also, vim everywhere
+bindkey -v
+[[ -f ~/.inputrc ]] || {
+cat <<-EOB > ~/.inputrc
+set editing-mode vi
+set keymap vi-insert
+EOB
+} 
+
 # ls
 
 [[ -f /usr/local/bin/exa-wrapper.sh ]] || {
