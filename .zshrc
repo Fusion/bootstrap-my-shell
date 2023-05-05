@@ -7,6 +7,7 @@ case $- in
       *) return;;
 esac
 
+
 # Toggles
 
 I_WANT_COMMANDS=true
@@ -14,9 +15,28 @@ I_WANT_PROMPT=false
 I_WANT_PLUGINS=true
 I_WANT_UPDATES=true
 
-[[ -d /nix ]] || {
-  sudo rm -rf ~/.nix* ~/.env.nix
-  sh <(curl -L https://nixos.org/nix/install)
+#
+
+[[ -f ~/.env.cfr-setup ]] || {
+    printf "CFR Environment not setup. Setup full? (avoid if remoting) "
+    touch ~/.env.cfr-setup
+    if ! read -q; then
+        cat <<-EOB > ~/.env.cfr-setup
+        I_WANT_COMMANDS=false
+        I_WANT_PROMPT=false
+        I_WANT_PLUGINS=true
+        I_WANT_UPDATES=false
+EOB
+    fi
+}
+
+. ~/.env.cfr-setup
+
+[[ I_WANT_COMMANDS ]] && {
+    [[ -d /nix ]] || {
+      sudo rm -rf ~/.nix* ~/.env.nix
+      sh <(curl -L https://nixos.org/nix/install)
+    }
 }
 
 case "$(uname)" in
@@ -114,7 +134,7 @@ EOB
   zplug 'wfxr/forgit'
 
   $(zplug check) || {
-    printf "Install? [y/N]: "
+    printf "Install zplug? [y/N]: "
     if read -q; then
         echo; zplug install
     fi
@@ -224,12 +244,16 @@ EOB
 
 # ls
 
-[[ -f /usr/local/bin/exa-wrapper.sh ]] || {
-    sudo curl -o /usr/local/bin/exa-wrapper.sh \
-    https://gist.githubusercontent.com/eggbean/74db77c4f6404dd1f975bd6f048b86f8/raw/157d868736f939fdf9c9d235f6f25478d9dbdc02/exa-wrapper.sh \
-    && sudo chmod +x /usr/local/bin/exa-wrapper.sh
+[[ I_WANT_COMMANDS ]] && {
+    [[ -f /usr/local/bin/exa-wrapper.sh ]] || {
+        sudo curl -o /usr/local/bin/exa-wrapper.sh \
+        https://gist.githubusercontent.com/eggbean/74db77c4f6404dd1f975bd6f048b86f8/raw/157d868736f939fdf9c9d235f6f25478d9dbdc02/exa-wrapper.sh \
+        && sudo chmod +x /usr/local/bin/exa-wrapper.sh
+    }
 }
-alias ls="exa-wrapper.sh"
+[[ -f /usr/local/bin/exa-wrapper.sh ]] || {
+    alias ls="exa-wrapper.sh"
+}
 
 # asdf versions manager for many packages and languages
 [ -d $HOME/.asdf ] && {
@@ -248,25 +272,36 @@ fi
 
 # certinfo
 
-[[ -f /usr/local/bin/certinfo ]] || {
-    [[ "$OS" != "OSX" ]] && {
-        certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep linux_amd64)"
-    } || {
-        certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep darwin_arm64)"
+[[ I_WANT_COMMANDS ]] && {
+    [[ -f /usr/local/bin/certinfo ]] || {
+        [[ "$OS" != "OSX" ]] && {
+            certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep linux_amd64)"
+        } || {
+            certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep darwin_arm64)"
+        }
+        curl -Lo /tmp/certinfo.tgz ${certinfo_url} \
+            && sudo tar zxvf /tmp/certinfo.tgz -C /usr/local/bin/ certinfo \
+            && sudo chmod +x /usr/local/bin/certinfo
     }
-    curl -Lo /tmp/certinfo.tgz ${certinfo_url} \
-        && sudo tar zxvf /tmp/certinfo.tgz -C /usr/local/bin/ certinfo \
-        && sudo chmod +x /usr/local/bin/certinfo
 }
 
 # Switches
 
-export EDITOR="nvim"
+[[ $(command -v nvim) ]] && {
+    export EDITOR="nvim"
+    [[ -f $HOME/.local/bin/nvim ]] && {
+        alias vi=~/.local/bin/nvim
+        alias vim=~/.local/bin/nvim
+    } || {
+        alias vi=~/.nix-profile/bin/nvim
+        alias vim=~/.nix-profile/bin/nvim
+    }
+}
 export VISUAL="vim"
 export PAGER="bat"
-alias vi=~/.nix-profile/bin/nvim
-alias vim=~/.nix-profile/bin/nvim
-alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
+[[ $(command -v ncdu) ]] && {
+    alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
+}
 [[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm ssh"
 export PATH=~/.local/bin:$PATH
 [[ -d ~/.krew ]] && export PATH="${PATH}:${HOME}/.krew/bin"
