@@ -19,7 +19,7 @@ esac
 # Toggles
 
 I_WANT_COMMANDS=true
-I_WANT_PROMPT=false
+I_WANT_PROMPT=true
 I_WANT_PLUGINS=true
 I_WANT_UPDATES=true
 
@@ -31,7 +31,7 @@ I_WANT_UPDATES=true
     if ! read -q; then
         cat <<-EOB > ~/.env.cfr-setup
 I_WANT_COMMANDS=false
-I_WANT_PROMPT=false
+I_WANT_PROMPT=true
 I_WANT_PLUGINS=true
 I_WANT_UPDATES=false
 EOB
@@ -197,27 +197,27 @@ $I_WANT_UPDATES && {
 # Prompt
 
 $I_WANT_PROMPT && {
-  [[ -f /usr/local/bin/oh-my-posh ]] || {
+  [[ -f $HOME/.local/bin/oh-my-posh ]] || {
     [[ "$OS" != "OSX" ]] && {
       posh_bin=posh-linux-amd64
     } || {
       posh_bin=posh-darwin-arm64
     }
-    sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/${posh_bin} -O /usr/local/bin/oh-my-posh \
-    && sudo chmod +x /usr/local/bin/oh-my-posh \
-    && mkdir ~/.poshthemes \
+    sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/${posh_bin} -O $HOME/.local/bin/oh-my-posh \
+    && sudo chmod +x $HOME/.local/bin/oh-my-posh \
+    && mkdir -p ~/.poshthemes \
     && wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip \
     && unzip ~/.poshthemes/themes.zip -d ~/.poshthemes \
     && chmod u+rw ~/.poshthemes/*.omp.* \
     && rm ~/.poshthemes/themes.zip \
     && echo "Install Inconsolata font" \
-    && oh-my-posh font install \
+    && $HOME/.local/bin/oh-my-posh font install \
     && echo yes
   }
 }
 
 [[ -d ~/.poshthemes ]] && {
-  eval "$(oh-my-posh init zsh --config ~/.poshthemes/aliens.omp.json)"
+  eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/aliens.omp.json)"
 }
 
 # direnv sources a directory .envrc file
