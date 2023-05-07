@@ -7,6 +7,14 @@ case $- in
       *) return;;
 esac
 
+# Enter nix shell if needed
+
+#[[ -f $HOME/.nix/nix-user-chroot ]] && {
+#    ps | grep nix-user-root &> /dev/null
+#    [[ $? -ne 0 ]] && {
+#        $HOME/.nix/nix-user-chroot ~/.nix zsh
+#    }
+#}
 
 # Toggles
 
@@ -15,29 +23,49 @@ I_WANT_PROMPT=false
 I_WANT_PLUGINS=true
 I_WANT_UPDATES=true
 
-#
+# Do we have a setup file overring some settings?
 
 [[ -f ~/.env.cfr-setup ]] || {
-    printf "CFR Environment not setup. Setup full? (avoid if remoting) "
+    printf "CFR Environment not setup. Setup full? "
     touch ~/.env.cfr-setup
     if ! read -q; then
         cat <<-EOB > ~/.env.cfr-setup
-        I_WANT_COMMANDS=false
-        I_WANT_PROMPT=false
-        I_WANT_PLUGINS=true
-        I_WANT_UPDATES=false
+I_WANT_COMMANDS=false
+I_WANT_PROMPT=false
+I_WANT_PLUGINS=true
+I_WANT_UPDATES=false
 EOB
     fi
+    echo
 }
 
 . ~/.env.cfr-setup
 
-[[ I_WANT_COMMANDS ]] && {
-    [[ -d /nix ]] || {
-      sudo rm -rf ~/.nix* ~/.env.nix
-      sh <(curl -L https://nixos.org/nix/install)
-    }
+[[ -v I_HAVE_NIX ]] || {
+    printf "NIX not installed. Setup? "
+    if read -q; then
+        printf "Install as root? (not for remote) "
+        if read -q; then
+            curl -L https://github.com/nix-community/nix-user-chroot/releases/download/1.2.2/nix-user-chroot-bin-1.2.2-i686-unknown-linux-musl -o nix-user-chroot
+	    chmod +x nix-user-chroot
+	    mkdir -m 0755 ~/.nix
+	    ./nix-user-chroot ~/.nix bash -c 'curl -L https://nixos.org/nix/install | sh'
+	    [[ -d $HOME/.nix ]] && mv nix-user-chroot $HOME/.nix/
+	else
+            [[ -d /nix ]] || {
+              sudo rm -rf ~/.nix* ~/.env.nix
+              sh <(curl -L https://nixos.org/nix/install)
+            }
+        fi
+        echo I_HAVE_NIX=true >> ~/.env.cfr-setup
+    else
+        echo I_HAVE_NIX=false >> ~/.env.cfr-setup
+    fi
+    . ~/.env.cfr-setup
 }
+
+
+$I_HAVE_NIX || I_WANT_COMMANDS=false
 
 case "$(uname)" in
     Linux)
@@ -77,7 +105,7 @@ nix_shell=""
 EOB
 }
 
-[[ I_WANT_COMMANDS ]] && {
+$I_WANT_COMMANDS && {
   [[ -f ~/.env.nix ]] || {
     cat <<-EOB > ~/.env.nix
 with import <nixpkgs> {}; [
@@ -120,7 +148,7 @@ EOB
 
 # ZSH plugins
 
-[[ I_WANT_PLUGINS ]] && {
+$I_WANT_PLUGINS && {
   [[ "$SHELL" =~ zsh ]] && {
     [[ -f ~/.zplug/init.zsh ]] || {
       curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
@@ -157,7 +185,7 @@ preexec_functions+=(preexec_custom_history)
 
 # On Ubuntu, refresh apt db if older than a month
 
-[[ I_WANT_UPDATES ]] && {
+$I_WANT_UPDATES && {
   [[ -f /var/lib/apt/periodic/update-success-stamp ]] && {
       freshness=$(( $(date +%s) - $(stat -c%Y /var/lib/apt/periodic/update-success-stamp) ))
       [ $freshness -gt 2592000 ] && {
@@ -168,7 +196,7 @@ preexec_functions+=(preexec_custom_history)
 
 # Prompt
 
-[[ I_WANT_PROMPT ]] && {
+$I_WANT_PROMPT && {
   [[ -f /usr/local/bin/oh-my-posh ]] || {
     [[ "$OS" != "OSX" ]] && {
       posh_bin=posh-linux-amd64
@@ -244,7 +272,7 @@ EOB
 
 # ls
 
-[[ I_WANT_COMMANDS ]] && {
+$I_WANT_COMMANDS && {
     [[ -f /usr/local/bin/exa-wrapper.sh ]] || {
         sudo curl -o /usr/local/bin/exa-wrapper.sh \
         https://gist.githubusercontent.com/eggbean/74db77c4f6404dd1f975bd6f048b86f8/raw/157d868736f939fdf9c9d235f6f25478d9dbdc02/exa-wrapper.sh \
@@ -272,7 +300,7 @@ fi
 
 # certinfo
 
-[[ I_WANT_COMMANDS ]] && {
+$I_WANT_COMMANDS && {
     [[ -f /usr/local/bin/certinfo ]] || {
         [[ "$OS" != "OSX" ]] && {
             certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep linux_amd64)"
@@ -365,5 +393,3 @@ dotfilesclone () {
 
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
-
-if [ -e /home/chris/.nix-profile/etc/profile.d/nix.sh ]; then . /home/chris/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
