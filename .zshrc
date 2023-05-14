@@ -44,18 +44,18 @@ EOB
 [[ -v I_HAVE_NIX ]] || {
     printf "NIX not installed. Setup? "
     if read -q; then
-        printf "Install as root? (not for remote) "
+        printf "\nInstall as root? (not for remote) "
         if read -q; then
+            [[ -d /nix ]] || {
+              sudo rm -rf ~/.nix* ~/.env.nix
+              sh <(curl -L https://nixos.org/nix/install)
+            }
+	else
             curl -L https://github.com/nix-community/nix-user-chroot/releases/download/1.2.2/nix-user-chroot-bin-1.2.2-i686-unknown-linux-musl -o nix-user-chroot
 	    chmod +x nix-user-chroot
 	    mkdir -m 0755 ~/.nix
 	    ./nix-user-chroot ~/.nix bash -c 'curl -L https://nixos.org/nix/install | sh'
 	    [[ -d $HOME/.nix ]] && mv nix-user-chroot $HOME/.nix/
-	else
-            [[ -d /nix ]] || {
-              sudo rm -rf ~/.nix* ~/.env.nix
-              sh <(curl -L https://nixos.org/nix/install)
-            }
         fi
         echo I_HAVE_NIX=true >> ~/.env.cfr-setup
     else
