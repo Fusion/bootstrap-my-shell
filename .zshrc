@@ -39,6 +39,7 @@ EOB
     echo
 }
 
+
 . ~/.env.cfr-setup
 
 [[ -v I_HAVE_NIX ]] || {
@@ -84,7 +85,8 @@ help() {
 CFR various help items:
 -----------------------
 forgit: interactive git -- \`ga\` etc. (for more: \`aliases\`)
-dotfles: manage dotfiles git repo
+dotfiles: manage dotfiles git repo
+smug: manage tmux layouts
 
 EOB
 }
@@ -168,7 +170,7 @@ $I_WANT_PLUGINS && {
         echo; zplug install
     fi
   }
-  zplug load
+  zplug load > /dev/null
 }
 
 [[ "$SHELL" =~ zsh ]] && { autoload -Uz compinit && compinit; }
