@@ -130,6 +130,7 @@ with import <nixpkgs> {}; [
     gitui
     clac # rpm calculator
     jc # output to json
+    smug # tmuxinator-like
     ${nix_platform}
     ${nix_shell}
 ]
