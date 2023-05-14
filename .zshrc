@@ -271,6 +271,53 @@ set keymap vi-insert
 EOB
 } 
 
+# tmux smug goodness
+[[ -d ~/.config/smug ]] || {
+    mkdir -p ~/.config/smug
+    cat <<-EOB > ~/.config/smug/trr.yml
+session: trr
+
+windows:
+  - name: main
+    layout: tiled
+    commands:
+      - ssh voicetest-sip01.convoso.com
+      - sudo -s
+      - cd /usr/local/opensips_proxy/etc/opensips
+    panes:
+      - type: horizontal
+        commands:
+          - ssh voicetest-db02.convoso.com
+      - type: horizontal
+        commands:
+          - ssh voicetest-db01.convoso.com
+      - type: horizontal
+        commands:
+          - ssh voicetest-rtp02.convoso.com
+          - sudo -s
+          - systemctl --no-pager status rtpengine
+      - type: horizontal
+        commands:
+          - ssh voicetest-rtp01.convoso.com
+          - sudo -s
+          - systemctl --no-pager status rtpengine
+      - type: horizontal
+        commands:
+          - ssh voicetest-sip02.convoso.com
+          - sudo -s
+  - name: simulator
+    layout: tiled
+    commands:
+      - ssh cravenscroft@trr-out-sim.convoso.com
+      - sudo -s
+      - cd /root/sipp
+    panes:
+      - type: horizontal
+        commands:
+          - ssh cravenscroft@sink1-las.convoso.com
+EOB
+}
+
 # ls
 
 $I_WANT_COMMANDS && {
