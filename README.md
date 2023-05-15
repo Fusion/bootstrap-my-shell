@@ -19,3 +19,8 @@ dotfilesclone () {
 dotfilesclone
 ```
 
+# Cleanup
+
+```bash
+sudo rm -rf /nix .env.cfr-setup .env.nix $HOME/.nix-profile
+```
