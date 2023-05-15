@@ -139,13 +139,13 @@ with import <nixpkgs> {}; [
 ]
 EOB
 
-    defaultprofilepath=$(\ls -d /nix/store/*-nix-*)
+    defaultprofilepath=$(\ls -l -d -- /nix/store/*-nix-[0-9][.][0-9]*)
     [[ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]] && { source $HOME/.nix-profile/etc/profile.d/nix.sh; }
-    nix-env -irf ~/.env.nix
+    /nix/var/nix/profiles/default/bin/nix-env -irf ~/.env.nix
     # make up for losing default profile in some environments
     [[ -f /nix/var/nix/profiles/default ]] || {
          mkdir -p /nix/var/nix/profiles \
-         && ln -s $defaultprofilepath /nix/var/nix/profiles/default
+         && sudo ln -s $defaultprofilepath /nix/var/nix/profiles/default
     }
   }
 }
