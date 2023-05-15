@@ -51,12 +51,12 @@ EOB
               sudo rm -rf ~/.nix* ~/.env.nix
               sh <(curl -L https://nixos.org/nix/install)
             }
-	else
+        else
             curl -L https://github.com/nix-community/nix-user-chroot/releases/download/1.2.2/nix-user-chroot-bin-1.2.2-i686-unknown-linux-musl -o nix-user-chroot
-	    chmod +x nix-user-chroot
-	    mkdir -m 0755 ~/.nix
-	    ./nix-user-chroot ~/.nix bash -c 'curl -L https://nixos.org/nix/install | sh'
-	    [[ -d $HOME/.nix ]] && mv nix-user-chroot $HOME/.nix/
+            chmod +x nix-user-chroot
+            mkdir -m 0755 ~/.nix
+            ./nix-user-chroot ~/.nix bash -c 'curl -L https://nixos.org/nix/install | sh'
+            [[ -d $HOME/.nix ]] && mv nix-user-chroot $HOME/.nix/
         fi
         echo I_HAVE_NIX=true >> ~/.env.cfr-setup
     else
@@ -133,13 +133,14 @@ with import <nixpkgs> {}; [
     clac # rpm calculator
     jc # output to json
     smug # tmuxinator-like
+    diff-so-fancy
     ${nix_platform}
     ${nix_shell}
 ]
 EOB
 
     defaultprofilepath=$(\ls -d /nix/store/*-nix-*)
-    source ~/.nix-profile/etc/profile.d/nix.sh
+    [[ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]] && { source $HOME/.nix-profile/etc/profile.d/nix.sh; }
     nix-env -irf ~/.env.nix
     # make up for losing default profile in some environments
     [[ -f /nix/var/nix/profiles/default ]] || {
@@ -419,6 +420,11 @@ export NVM_DIR="$HOME/.nvm"
     }
 }
 
+# more git
+git config --global core.pager "diff-so-fancy | less --tabs=4 -RFX"
+git config --global interactive.diffFilter "diff-so-fancy --patch"
+git config --global color.ui true
+
 # Some self referential work
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 alias dottig="GIT_DIR=$HOME/.dotfiles GIT_WORK_TREE=$HOME tig"
@@ -444,4 +450,4 @@ dotfilesclone () {
 # Fig post block. Keep at the bottom of this file.
 [[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
 
-if [ -e /home/chris/.nix-profile/etc/profile.d/nix.sh ]; then . /home/chris/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
