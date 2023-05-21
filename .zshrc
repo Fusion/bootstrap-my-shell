@@ -91,6 +91,9 @@ K: display information
 gd: go to definition
 <ctrl>w s/<ctrl>w v: split
 <ctrl>p: fzf files
+set [no]list: display invisible characters
+rvi: remote vim edit
+lcd: change directory in vim
 
 EOB
         ;;
@@ -345,6 +348,28 @@ EOB
            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
 }
 [[ -f ~/.config/nvim/init.lua ]] || refresh_vim
+
+rvi() {
+    local target
+    [[ "$1" == "" ]] && {echo "$0 <host> [kill]."; return;}
+    [[ $1 == *.*  ]] && target=$1 || {
+        target="$(grep $1 ~/.ssh/config -A 1 | awk '/HostName/{print $2}')"
+        [[ "$target" == "" ]] && target=$1
+    }
+    action="${2:-start}"
+    case $action in
+        start)
+        [[ "$(ssh $target ps x | grep nvim | grep headless)" == "" ]] && {
+            ssh -n $target -- "\$HOME/.nix-profile/bin/nvim --headless --listen 0.0.0.0:6666 &>/dev/null &"
+        }
+        /Applications/neovide.app/Contents/MacOS/neovide --server $target:6666
+        ;;
+        stop|kill)
+            nvim --server $target:6666 --remote-send ':qa!<CR>'
+            return
+        ;;
+    esac
+}
 
 # also, vim everywhere
 bindkey -v
