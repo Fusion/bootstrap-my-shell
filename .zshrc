@@ -87,6 +87,7 @@ CFR various help items:
 forgit: interactive git -- \`ga\` etc. (for more: \`aliases\`)
 dotfiles: manage dotfiles git repo
 smug: manage tmux layouts
+refresh_*: re-sync environment
 
 EOB
 }
@@ -107,8 +108,7 @@ nix_shell=""
 EOB
 }
 
-$I_WANT_COMMANDS && {
-  [[ -f ~/.env.nix ]] || {
+refresh_commands() {
     cat <<-EOB > ~/.env.nix
 with import <nixpkgs> {}; [
     bat # deluxe cat
@@ -133,6 +133,7 @@ with import <nixpkgs> {}; [
     clac # rpm calculator
     jc # output to json
     smug # tmuxinator-like
+    ranger
     diff-so-fancy
     ${nix_platform}
     ${nix_shell}
@@ -144,34 +145,37 @@ EOB
     /nix/var/nix/profiles/default/bin/nix-env -irf ~/.env.nix
     # make up for losing default profile in some environments
     [[ -f /nix/var/nix/profiles/default ]] || {
-         mkdir -p /nix/var/nix/profiles \
-         && sudo ln -s $defaultprofilepath /nix/var/nix/profiles/default
+        mkdir -p /nix/var/nix/profiles \
+        && sudo ln -s $defaultprofilepath /nix/var/nix/profiles/default
     }
-  }
+}
+
+$I_WANT_COMMANDS && {
+    [[ -f ~/.env.nix ]] || refresh_commands
 }
 
 # ZSH plugins
 
 $I_WANT_PLUGINS && {
-  [[ "$SHELL" =~ zsh ]] && {
-    [[ -f ~/.zplug/init.zsh ]] || {
-      curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
+    [[ "$SHELL" =~ zsh ]] && {
+        [[ -f ~/.zplug/init.zsh ]] || {
+            curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
+        }
     }
-  }
 }
 
 [[ -f ~/.zplug/init.zsh ]] && {
-  source ~/.zplug/init.zsh
+    source ~/.zplug/init.zsh
 
-  zplug 'wfxr/forgit'
+    zplug 'wfxr/forgit'
 
-  $(zplug check) || {
-    printf "Install zplug? [y/N]: "
-    if read -q; then
-        echo; zplug install
-    fi
-  }
-  zplug load > /dev/null
+    $(zplug check) || {
+        printf "Install zplug? [y/N]: "
+        if read -q; then
+            echo; zplug install
+        fi
+    }
+    zplug load > /dev/null
 }
 
 [[ "$SHELL" =~ zsh ]] && { autoload -Uz compinit && compinit; }
@@ -190,22 +194,21 @@ preexec_functions+=(preexec_custom_history)
 # On Ubuntu, refresh apt db if older than a month
 
 $I_WANT_UPDATES && {
-  [[ -f /var/lib/apt/periodic/update-success-stamp ]] && {
-      freshness=$(( $(date +%s) - $(stat -c%Y /var/lib/apt/periodic/update-success-stamp) ))
-      [ $freshness -gt 2592000 ] && {
-          sudo apt-get update
-      }
-  }
+    [[ -f /var/lib/apt/periodic/update-success-stamp ]] && {
+        freshness=$(( $(date +%s) - $(stat -c%Y /var/lib/apt/periodic/update-success-stamp) ))
+        [ $freshness -gt 2592000 ] && {
+            sudo apt-get update
+        }
+    }
 }
 
 # Prompt
 
-$I_WANT_PROMPT && {
-  [[ -f $HOME/.local/bin/oh-my-posh ]] || {
+refresh_prompt() {
     [[ "$OS" != "OSX" ]] && {
-      posh_bin=posh-linux-amd64
+        posh_bin=posh-linux-amd64
     } || {
-      posh_bin=posh-darwin-arm64
+        posh_bin=posh-darwin-arm64
     }
     sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/${posh_bin} -O $HOME/.local/bin/oh-my-posh \
     && sudo chmod +x $HOME/.local/bin/oh-my-posh \
@@ -217,38 +220,38 @@ $I_WANT_PROMPT && {
     && echo "Install Inconsolata font" \
     && $HOME/.local/bin/oh-my-posh font install \
     && echo yes
-  }
+}
+
+$I_WANT_PROMPT && {
+    [[ -f $HOME/.local/bin/oh-my-posh ]] || refresh_prompt
 }
 
 [[ -d ~/.poshthemes ]] && {
-  eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/aliens.omp.json)"
+    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/aliens.omp.json)"
 }
 
 # direnv sources a directory .envrc file
 
 [[ $(command -v direnv) ]] && {
-  eval "$(direnv hook zsh)"
+    eval "$(direnv hook zsh)"
 }
 
 # quick jump
 
 [[ $(command -v fasd) ]] && {
-  eval "$(fasd --init auto)"
+    eval "$(fasd --init auto)"
 }
 
 # nvim goodness
 
-[[ -f ~/.local/share/nvim/site/autoload/plug.vim  ]] || {
-	sh -c 'curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
-	       https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-}
-[[ -f ~/.config/nvim/init.lua ]] || {
+refresh_vim() {
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
 local Plug = vim.fn['plug#']
 vim.call('plug#begin', '~/.config/nvim/plugged')
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/vim-easy-align'
+Plug 'kevinhwang91/rnvimr'
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -262,20 +265,27 @@ vim.opt.copyindent = true
 vim.opt.pastetoggle = "<F2>"
 vim.opt.list = true
 vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
+vim.cmd [[colorscheme slate]]
 EOB
 }
+
+[[ -f ~/.local/share/nvim/site/autoload/plug.vim  ]] || {
+    sh -c 'curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
+           https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+}
+[[ -f ~/.config/nvim/init.lua ]] || refresh_vim
 
 # also, vim everywhere
 bindkey -v
 [[ -f ~/.inputrc ]] || {
-cat <<-EOB > ~/.inputrc
+    cat <<-EOB > ~/.inputrc
 set editing-mode vi
 set keymap vi-insert
 EOB
-} 
+}
 
 # tmux smug goodness
-[[ -d ~/.config/smug ]] || {
+refresh_smug() {
     mkdir -p ~/.config/smug
     cat <<-EOB > ~/.config/smug/trr.yml
 session: trr
@@ -320,6 +330,8 @@ windows:
           - ssh cravenscroft@sink1-las.convoso.com
 EOB
 }
+
+[[ -d ~/.config/smug ]] || refresh_smug
 
 # ls
 
@@ -388,10 +400,10 @@ export PATH=~/.local/bin:$PATH
 # fzf keys
 p=$(which fzf)
 if [[ $? -eq 0 ]]; then
-  sp="$(find /nix/store -maxdepth 1 -type d -name '*fzf*' -not -name '*man')"
-  if [[ "$sp" != "" ]]; then
-    while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh
-  fi
+    sp="$(find /nix/store -maxdepth 1 -type d -name '*fzf*' -not -name '*man')"
+    if [[ "$sp" != "" ]]; then
+        while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh
+    fi
 fi
 
 # Languages, maybe
@@ -414,10 +426,17 @@ export NVM_DIR="$HOME/.nvm"
 # khoj because why note <- see what I did there
 [[ $(command -v khoj) ]] && {
     [[ $(command -v tmux) ]] && {
-      [[ $(ps aux | grep 'kho[j]') == "" ]] && {
-        tmux new-session -d -s khoj 'khoj --no-gui'
-      }
+        [[ $(ps aux | grep 'kho[j]') == "" ]] && {
+            tmux new-session -d -s khoj 'khoj --no-gui'
+        }
     }
+}
+
+refresh_all() {
+    refresh_commands
+    refresh_prompt
+    refresh_vim
+    refresh_smug
 }
 
 # more git
