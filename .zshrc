@@ -377,6 +377,11 @@ $I_WANT_COMMANDS && {
     }
 }
 
+# adjust paths
+#
+[[ "$PATH" =~ .nix-profile ]] || export PATH=~/.nix-profile/bin:$PATH
+[[ "$PATH" =~ default ]] || export PATH=/nix/var/nix/profiles/default/bin:$PATH
+
 # Switches
 
 [[ $(command -v nvim) ]] && {
@@ -417,9 +422,6 @@ fi
 export NVM_DIR="$HOME/.nvm"
 [[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [[ -s "$NVM_DIR/bash_completion" ]] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-[[ "$PATH" =~ .nix-profile ]] || export PATH=~/.nix-profile/bin/:$PATH
-[[ "$PATH" =~ default ]] || export PATH=/nix/var/nix/profiles/default/bin:$PATH
 
 # haskell
 [ -f "/Users/chris/.ghcup/env" ] && source "/Users/chris/.ghcup/env" # ghcup-env
