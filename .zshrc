@@ -80,7 +80,21 @@ case "$(uname)" in
 esac
 
 help() {
-  cat << EOB
+    case "$1" in
+        vim|nvim)
+    cat << EOB
+
+VIM commands:
+-------------
+<ctr>o: jump back to previous location
+K: display information
+gd: go to definition
+<ctrl>w s/<ctrl>w v: split
+
+EOB
+        ;;
+    *)
+    cat << EOB
 
 CFR various help items:
 -----------------------
@@ -90,7 +104,11 @@ smug: manage tmux layouts
 zcd: interactive cd using ranger
 refresh_*: re-sync environment
 
+help vim: vim help
+
 EOB
+        ;;
+        esac
 }
 
 # Build nix package list
@@ -261,6 +279,7 @@ Plug 'hrsh7th/nvim-cmp'
 Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'L3MON4D3/LuaSnip'
 Plug('VonHeikemen/lsp-zero.nvim', {['branch'] = 'v2.x'})
+Plug 'ldelossa/nvim-ide'
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -281,6 +300,35 @@ lsp.default_keymaps({buffer = bufnr})
 end)
 require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
 lsp.setup()
+local bufferlist      = require('ide.components.bufferlist')
+local explorer        = require('ide.components.explorer')
+local outline         = require('ide.components.outline')
+local callhierarchy   = require('ide.components.callhierarchy')
+local timeline        = require('ide.components.timeline')
+local terminal        = require('ide.components.terminal')
+local terminalbrowser = require('ide.components.terminal.terminalbrowser')
+local changes         = require('ide.components.changes')
+local commits         = require('ide.components.commits')
+local branches        = require('ide.components.branches')
+local bookmarks       = require('ide.components.bookmarks')
+require('ide').setup({
+    panels = {
+        left = "explorer",
+        right = "git"
+    },
+    panel_groups = {
+        explorer = { outline.Name, bufferlist.Name, explorer.Name, bookmarks.Name, callhierarchy.Name },
+        git = { changes.Name, commits.Name, timeline.Name, branches.Name }
+    },
+    workspaces = {
+        auto_open = 'both',
+    },
+    panel_sizes = {
+        left = 30,
+        right = 30,
+        bottom = 15
+    }
+})
 EOB
 }
 
