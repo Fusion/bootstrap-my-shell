@@ -87,6 +87,7 @@ CFR various help items:
 forgit: interactive git -- \`ga\` etc. (for more: \`aliases\`)
 dotfiles: manage dotfiles git repo
 smug: manage tmux layouts
+zcd: interactive cd using ranger
 refresh_*: re-sync environment
 
 EOB
@@ -217,9 +218,9 @@ refresh_prompt() {
     && unzip ~/.poshthemes/themes.zip -d ~/.poshthemes \
     && chmod u+rw ~/.poshthemes/*.omp.* \
     && rm ~/.poshthemes/themes.zip \
-    && echo "Install Inconsolata font" \
+    && echo "\nInstall Inconsolata font" \
     && $HOME/.local/bin/oh-my-posh font install \
-    && echo yes
+    && echo Prompt updated.
 }
 
 $I_WANT_PROMPT && {
@@ -430,6 +431,13 @@ export NVM_DIR="$HOME/.nvm"
             tmux new-session -d -s khoj 'khoj --no-gui'
         }
     }
+}
+
+# interactive cd
+icd() {
+    local tmpfile="$(mktemp -t tmp.XXXXXX)"
+    ranger --choosedir=$tmpfile
+    cd -- "$(cat $tmpfile)"
 }
 
 refresh_all() {
