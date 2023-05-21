@@ -253,6 +253,14 @@ vim.call('plug#begin', '~/.config/nvim/plugged')
 Plug 'itchyny/lightline.vim'
 Plug 'junegunn/vim-easy-align'
 Plug 'kevinhwang91/rnvimr'
+Plug 'ldelossa/nvim-ide'
+Plug 'neovim/nvim-lspconfig'
+Plug('williamboman/mason.nvim')
+Plug 'williamboman/mason-lspconfig.nvim'
+Plug 'hrsh7th/nvim-cmp'
+Plug 'hrsh7th/cmp-nvim-lsp'
+Plug 'L3MON4D3/LuaSnip'
+Plug('VonHeikemen/lsp-zero.nvim', {['branch'] = 'v2.x'})
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -267,6 +275,12 @@ vim.opt.pastetoggle = "<F2>"
 vim.opt.list = true
 vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
 vim.cmd [[colorscheme slate]]
+local lsp = require('lsp-zero').preset({})
+lsp.on_attach(function(client, bufnr)
+lsp.default_keymaps({buffer = bufnr})
+end)
+require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
+lsp.setup()
 EOB
 }
 
