@@ -90,6 +90,7 @@ VIM commands:
 K: display information
 gd: go to definition
 <ctrl>w s/<ctrl>w v: split
+<ctrl>p: fzf files
 
 EOB
         ;;
@@ -280,6 +281,10 @@ Plug 'hrsh7th/cmp-nvim-lsp'
 Plug 'L3MON4D3/LuaSnip'
 Plug('VonHeikemen/lsp-zero.nvim', {['branch'] = 'v2.x'})
 Plug 'ldelossa/nvim-ide'
+Plug 'rcarriga/nvim-notify'
+Plug 'dnlhc/glance.nvim'
+Plug('ibhagwan/fzf-lua', {branch = 'main'})
+Plug 'nvim-tree/nvim-web-devicons'
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -312,6 +317,7 @@ local commits         = require('ide.components.commits')
 local branches        = require('ide.components.branches')
 local bookmarks       = require('ide.components.bookmarks')
 require('ide').setup({
+    icon_set = "nerd",
     panels = {
         left = "explorer",
         right = "git"
@@ -329,6 +335,8 @@ require('ide').setup({
         bottom = 15
     }
 })
+vim.keymap.set("n", "<C-p>",
+  "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
 EOB
 }
 
