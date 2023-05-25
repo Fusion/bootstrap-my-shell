@@ -233,10 +233,10 @@ refresh_prompt() {
     } || {
         posh_bin=posh-darwin-arm64
     }
-    sudo wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/${posh_bin} -O $HOME/.local/bin/oh-my-posh \
+    sudo curl -L https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/${posh_bin} -o $HOME/.local/bin/oh-my-posh \
     && sudo chmod +x $HOME/.local/bin/oh-my-posh \
     && mkdir -p ~/.poshthemes \
-    && wget https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -O ~/.poshthemes/themes.zip \
+    && curl -L https://github.com/JanDeDobbeleer/oh-my-posh/releases/latest/download/themes.zip -o ~/.poshthemes/themes.zip \
     && unzip ~/.poshthemes/themes.zip -d ~/.poshthemes \
     && chmod u+rw ~/.poshthemes/*.omp.* \
     && rm ~/.poshthemes/themes.zip \
