@@ -289,6 +289,7 @@ Plug 'dnlhc/glance.nvim'
 Plug('ibhagwan/fzf-lua', {branch = 'main'})
 Plug 'nvim-tree/nvim-web-devicons'
 Plug 'sainnhe/gruvbox-material'
+Plug 'airblade/vim-rooter'
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -308,6 +309,7 @@ end
 vim.g.gruvbox_material_background = 'soft'
 vim.g.gruvbox_material_better_performance = 1
 vim.cmd [[colorscheme gruvbox-material]]
+vim.g.rooter_patterns = {'.git'}
 local lsp = require('lsp-zero').preset({})
 lsp.on_attach(function(client, bufnr)
 lsp.default_keymaps({buffer = bufnr})
