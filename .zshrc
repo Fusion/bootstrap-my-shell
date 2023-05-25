@@ -288,6 +288,7 @@ Plug 'rcarriga/nvim-notify'
 Plug 'dnlhc/glance.nvim'
 Plug('ibhagwan/fzf-lua', {branch = 'main'})
 Plug 'nvim-tree/nvim-web-devicons'
+Plug 'sainnhe/gruvbox-material'
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -301,7 +302,12 @@ vim.opt.copyindent = true
 vim.opt.pastetoggle = "<F2>"
 vim.opt.list = true
 vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
-vim.cmd [[colorscheme slate]]
+if vim.fn.has('termguicolors') then
+    vim.opt.termguicolors = true
+end
+vim.g.gruvbox_material_background = 'soft'
+vim.g.gruvbox_material_better_performance = 1
+vim.cmd [[colorscheme gruvbox-material]]
 local lsp = require('lsp-zero').preset({})
 lsp.on_attach(function(client, bufnr)
 lsp.default_keymaps({buffer = bufnr})
