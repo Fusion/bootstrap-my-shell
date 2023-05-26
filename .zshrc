@@ -359,7 +359,8 @@ EOB
 
 rvi() {
     local target
-    [[ "$1" == "" ]] && {echo "$0 <host> [server|kill]."; return;}
+    [[ "$1" == "" ]] && {echo "$0 <host>|server [kill]."; return;}
+    [[ $1 == server ]] && {screen nvim --headless --listen 0.0.0.0:6666; return;}
     [[ $1 == *.*  ]] && target=$1 || {
         target="$(grep $1 ~/.ssh/config -A 1 | awk '/HostName/{print $2}')"
         [[ "$target" == "" ]] && target=$1
@@ -371,9 +372,6 @@ rvi() {
             ssh -n $target -- "$([[ -f \$HOME/.nix-profile/bin/nvim ]] && { echo \$HOME/.nix-profile/bin/nvim } || { echo \$HOME/.local/bin/nvim }) --headless --listen 0.0.0.0:6666 &>/dev/null &"
         }
         /Applications/neovide.app/Contents/MacOS/neovide --server $target:6666
-        ;;
-        server)
-            screen nvim --headless --listen 0.0.0.0:6666
         ;;
         stop|kill)
             nvim --server $target:6666 --remote-send ':qa!<CR>'
