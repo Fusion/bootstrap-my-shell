@@ -105,7 +105,7 @@ CFR various help items:
 forgit: interactive git -- \`ga\` etc. (for more: \`aliases\`)
 dotfiles: manage dotfiles git repo
 smug: manage tmux layouts
-zcd: interactive cd using ranger
+icd: interactive cd using ranger
 refresh_*: re-sync environment
 
 help vim: vim help
@@ -368,7 +368,7 @@ rvi() {
     case $action in
         start)
         [[ "$(ssh $target ps x | grep nvim | grep headless)" == "" ]] && {
-            ssh -n $target -- "\$HOME/.nix-profile/bin/nvim --headless --listen 0.0.0.0:6666 &>/dev/null &"
+            ssh -n $target -- "$([[ -f \$HOME/.nix-profile/bin/nvim ]] && { echo \$HOME/.nix-profile/bin/nvim } || { echo \$HOME/.local/bin/nvim }) --headless --listen 0.0.0.0:6666 &>/dev/null &"
         }
         /Applications/neovide.app/Contents/MacOS/neovide --server $target:6666
         ;;
