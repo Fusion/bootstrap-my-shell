@@ -94,6 +94,7 @@ gd: go to definition
 set [no]list: display invisible characters
 rvi: remote vim edit
 lcd: change directory in vim
+NoIDE: remove IDE / DBUI: sql editor / Sql: both
 
 EOB
         ;;
@@ -270,6 +271,7 @@ $I_WANT_PROMPT && {
 refresh_vim() {
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
+vim.g.mapleader = ','
 local Plug = vim.fn['plug#']
 vim.call('plug#begin', '~/.config/nvim/plugged')
 Plug 'itchyny/lightline.vim'
@@ -290,6 +292,8 @@ Plug('ibhagwan/fzf-lua', {branch = 'main'})
 Plug 'nvim-tree/nvim-web-devicons'
 Plug 'sainnhe/gruvbox-material'
 Plug 'airblade/vim-rooter'
+Plug 'tpope/vim-dadbod'
+Plug 'kristijanhusak/vim-dadbod-ui'
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -346,6 +350,26 @@ require('ide').setup({
         bottom = 15
     }
 })
+vim.api.nvim_exec([[
+function! NoIDE()
+    let i = 0
+    while i < 3
+        close 1
+        let i += 1
+    endwhile
+    let i = 0
+    while i < 4
+        close 2
+        let i += 1
+    endwhile
+endfunction
+command! -nargs=0 NoIDE :call NoIDE()
+function! Sql()
+    NoIDE
+    DBUI
+endfunction
+command! -nargs=0 Sql :call Sql()
+]], false)
 vim.keymap.set("n", "<C-p>",
   "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
 EOB
