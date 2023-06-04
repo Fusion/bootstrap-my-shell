@@ -113,7 +113,26 @@ gd: go to definition
 set [no]list: display invisible characters
 rvi: remote vim edit
 lcd: change directory in vim
-NoIDE: remove IDE / DBUI: sql editor / Sql: both
+NoIDE: remove IDE / DBUI: sql editor / Sql: NoIDE+DBUI / Dag: NoIDE+dag.toggle
+
+EOB
+        ;;
+    dap|nvim-dap)
+    cat << EOB
+
+DAP:
+----
+UI:
+    `:lua require('dapui').toggle()`
+Python:
+    Install debugger: `pip3 install debugpy`
+    Load: `:lua require('dap-python').setup()`
+All:
+    Help: `help dap.txt`
+    Breakpoint: `:lua require'dap'.set_breakpoint()`
+    Run: `lua require'dap'.continue()|run_to_cursor()`
+    Step: `lua require'dap'.set_over()|step_into()|step_out()`
+    Open console: `lua require'dap'.repl.open()`
 
 EOB
         ;;
@@ -129,6 +148,7 @@ icd: interactive cd using ranger
 refresh_*: re-sync environment
 
 help vim: vim help
+help dap: nvim debugger help
 
 EOB
         ;;
@@ -322,6 +342,9 @@ Plug 'sainnhe/gruvbox-material'
 Plug 'airblade/vim-rooter'
 Plug 'tpope/vim-dadbod'
 Plug 'kristijanhusak/vim-dadbod-ui'
+Plug 'mfussenegger/nvim-dap'
+Plug 'rcarriga/nvim-dap-ui'
+Plug 'mfussenegger/nvim-dap-python'
 vim.call('plug#end')
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
@@ -379,6 +402,19 @@ require('ide').setup({
         bottom = 15
     }
 })
+local dap = require('dap')
+require('dapui').setup()
+dap.configurations.python = {
+    {
+        type = 'python';
+        request = 'launch';
+        name = "Launch Python file";
+        program = "${file}";
+        pythonPath = function()
+            return 'python3'
+        end;
+    },
+}
 vim.api.nvim_exec([[
 function! NoIDE()
     let i = 0
@@ -398,6 +434,11 @@ function! Sql()
     DBUI
 endfunction
 command! -nargs=0 Sql :call Sql()
+function! Dag()
+    NoIDE
+    lua require("dapui").toggle()
+endfunction
+command! -nargs=0 Dag :call Dag()
 ]], false)
 vim.keymap.set("n", "<C-p>",
   "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
