@@ -361,6 +361,7 @@ vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
 if vim.fn.has('termguicolors') then
     vim.opt.termguicolors = true
 end
+vim.g.db_ui_save_location = '~/Cells/db_ui'
 vim.g.gruvbox_material_background = 'soft'
 vim.g.gruvbox_material_better_performance = 1
 vim.cmd [[colorscheme gruvbox-material]]
@@ -637,6 +638,14 @@ export NVM_DIR="$HOME/.nvm"
             tmux new-session -d -s khoj 'khoj --no-gui'
         }
     }
+}
+
+# mackup specials
+[[ -d ~/.mackup ]] || {
+    mkdir -p ~/.mackup
+
+    cat <<-EOB > ~/.mackup/cfr-dbs
+EOB
 }
 
 # interactive cd
