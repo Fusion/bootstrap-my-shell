@@ -123,16 +123,28 @@ EOB
 DAP:
 ----
 UI:
-    `:lua require('dapui').toggle()`
+    :lua require('dapui').toggle()
 Python:
-    Install debugger: `pip3 install debugpy`
-    Load: `:lua require('dap-python').setup()`
+    Install debugger: pip3 install debugpy
+    Load: :lua require('dap-python').setup()
 All:
-    Help: `help dap.txt`
-    Breakpoint: `:lua require'dap'.set_breakpoint()`
-    Run: `lua require'dap'.continue()|run_to_cursor()`
-    Step: `lua require'dap'.set_over()|step_into()|step_out()`
-    Open console: `lua require'dap'.repl.open()`
+    Help: help dap.txt
+    Breakpoint: :lua require'dap'.set_breakpoint()
+    Run: lua require'dap'.continue()|run_to_cursor()
+    Step: lua require'dap'.set_over()|step_into()|step_out()
+    Open console: lua require'dap'.repl.open()
+
+EOB
+        ;;
+    chef)
+    cat << EOB
+
+CHEF:
+-----
+Ruby:
+    export PATH=\$PATH:/opt/chef-workstation/embedded/bin
+    export GEM_HOME=/opt/chef-workstation/embedded/lib/ruby/gems
+    export GEM_PATH=/opt/chef-workstation/embedded/lib/ruby/gems
 
 EOB
         ;;
@@ -149,6 +161,7 @@ refresh_*: re-sync environment
 
 help vim: vim help
 help dap: nvim debugger help
+help chef: various chef configuration info
 
 EOB
         ;;
@@ -318,34 +331,139 @@ $I_WANT_PROMPT && {
 refresh_vim() {
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
+-- config v1.2
 vim.g.mapleader = ','
-local Plug = vim.fn['plug#']
-vim.call('plug#begin', '~/.config/nvim/plugged')
-Plug 'itchyny/lightline.vim'
-Plug 'junegunn/vim-easy-align'
-Plug 'kevinhwang91/rnvimr'
-Plug 'ldelossa/nvim-ide'
-Plug 'neovim/nvim-lspconfig'
-Plug('williamboman/mason.nvim')
-Plug 'williamboman/mason-lspconfig.nvim'
-Plug 'hrsh7th/nvim-cmp'
-Plug 'hrsh7th/cmp-nvim-lsp'
-Plug 'L3MON4D3/LuaSnip'
-Plug('VonHeikemen/lsp-zero.nvim', {['branch'] = 'v2.x'})
-Plug 'j-hui/fidget.nvim'
-Plug 'ldelossa/nvim-ide'
-Plug 'rcarriga/nvim-notify'
-Plug 'dnlhc/glance.nvim'
-Plug('ibhagwan/fzf-lua', {branch = 'main'})
-Plug 'nvim-tree/nvim-web-devicons'
-Plug 'sainnhe/gruvbox-material'
-Plug 'airblade/vim-rooter'
-Plug 'tpope/vim-dadbod'
-Plug 'kristijanhusak/vim-dadbod-ui'
-Plug 'mfussenegger/nvim-dap'
-Plug 'rcarriga/nvim-dap-ui'
-Plug 'mfussenegger/nvim-dap-python'
-vim.call('plug#end')
+if vim.fn.has('termguicolors') then
+    vim.opt.termguicolors = true
+end
+
+local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    "git",
+    "clone",
+    "--filter=blob:none",
+    "https://github.com/folke/lazy.nvim.git",
+    "--branch=stable", -- latest stable release
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require("lazy").setup({
+    { "williamboman/mason.nvim" },
+    { "itchyny/lightline.vim" },
+    { "nvim-tree/nvim-web-devicons" },
+    { "sainnhe/gruvbox-material",
+        config = function()
+            vim.g.gruvbox_material_background = 'soft'
+            vim.g.gruvbox_material_better_performance = 1
+            vim.cmd [[colorscheme gruvbox-material]]
+        end,
+    },
+    { "junegunn/vim-easy-align" },
+    { "kevinhwang91/rnvimr" },
+    { "ldelossa/nvim-ide",
+        config = function()
+            require('ide').setup({
+                icon_set = "nerd",
+                panels = {
+                    left = "explorer",
+                    right = "git"
+                },
+                panel_groups = {
+                    explorer = { 
+                        require('ide.components.outline').Name,
+                        require('ide.components.bufferlist').Name,
+                        require('ide.components.explorer').Name,
+                        require('ide.components.bookmarks').Name,
+                        require('ide.components.callhierarchy').Name,
+                    },
+                    git = {
+                        require('ide.components.changes').Name,
+                        require('ide.components.commits').Name,
+                        require('ide.components.timeline').Name,
+                        require('ide.components.branches').Name,
+                    },
+                },
+                workspaces = {
+                    auto_open = 'both',
+                },
+                panel_sizes = {
+                    left = 30,
+                    right = 30,
+                    bottom = 15
+                }
+            })
+        end,
+    },
+    { "airblade/vim-rooter",
+        config = function()
+            vim.g.rooter_patterns = {'.git'}
+        end,
+    },
+    { "rcarriga/nvim-notify" },
+    { "dnlhc/glance.nvim" },
+    { "neovim/nvim-lspconfig" },
+    { "williamboman/mason-lspconfig.nvim" },
+    { "hrsh7th/nvim-cmp" },
+    { "hrsh7th/cmp-nvim-lsp" },
+    { "VonHeikemen/lsp-zero.nvim",
+        branch = "v2.x",
+        config = function()
+            local lsp = require('lsp-zero').preset({})
+            lsp.on_attach(function(_, bufnr)
+                lsp.default_keymaps({buffer = bufnr})
+            end)
+            require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
+            lsp.setup()
+        end,
+    },
+    { "L3MON4D3/LuaSnip" },
+    { "mfussenegger/nvim-dap",
+        config = function()
+            local dap = require('dap')
+            dap.configurations.python = {
+                {
+                    type = 'python';
+                    request = 'launch';
+                    name = "Launch Python file";
+                    program = "";
+                    pythonPath = function()
+                        return 'python3'
+                    end;
+                },
+            }
+        end,
+    },
+    { "rcarriga/nvim-dap-ui",
+        config = function()
+            require('dapui').setup()
+        end,
+    },
+    { "mfussenegger/nvim-dap-python" },
+    { "ibhagwan/fzf-lua",
+        branch = "main",
+        config = function()
+            vim.keymap.set("n", "<C-p>",
+                "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
+        end,
+    },
+    { "tpope/vim-dadbod" },
+    { "kristijanhusak/vim-dadbod-ui",
+        config = function()
+            vim.g.db_ui_save_location = '~/Cells/db_ui'
+        end,
+    },
+    { "SmiteshP/nvim-navic" },
+    { "utilyre/barbecue.nvim",
+        config = function()
+            require('barbecue').setup()
+        end,
+    },
+})
+
+
 vim.opt.mouse = "v"
 vim.opt.tabstop = 4
 vim.opt.softtabstop = 4
@@ -358,64 +476,7 @@ vim.opt.copyindent = true
 vim.opt.pastetoggle = "<F2>"
 vim.opt.list = true
 vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
-if vim.fn.has('termguicolors') then
-    vim.opt.termguicolors = true
-end
-vim.g.db_ui_save_location = '~/Cells/db_ui'
-vim.g.gruvbox_material_background = 'soft'
-vim.g.gruvbox_material_better_performance = 1
-vim.cmd [[colorscheme gruvbox-material]]
-vim.g.rooter_patterns = {'.git'}
-local lsp = require('lsp-zero').preset({})
-lsp.on_attach(function(client, bufnr)
-lsp.default_keymaps({buffer = bufnr})
-end)
-require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
-lsp.setup()
-require('fidget').setup()
-local bufferlist      = require('ide.components.bufferlist')
-local explorer        = require('ide.components.explorer')
-local outline         = require('ide.components.outline')
-local callhierarchy   = require('ide.components.callhierarchy')
-local timeline        = require('ide.components.timeline')
-local terminal        = require('ide.components.terminal')
-local terminalbrowser = require('ide.components.terminal.terminalbrowser')
-local changes         = require('ide.components.changes')
-local commits         = require('ide.components.commits')
-local branches        = require('ide.components.branches')
-local bookmarks       = require('ide.components.bookmarks')
-require('ide').setup({
-    icon_set = "nerd",
-    panels = {
-        left = "explorer",
-        right = "git"
-    },
-    panel_groups = {
-        explorer = { outline.Name, bufferlist.Name, explorer.Name, bookmarks.Name, callhierarchy.Name },
-        git = { changes.Name, commits.Name, timeline.Name, branches.Name }
-    },
-    workspaces = {
-        auto_open = 'both',
-    },
-    panel_sizes = {
-        left = 30,
-        right = 30,
-        bottom = 15
-    }
-})
-local dap = require('dap')
-require('dapui').setup()
-dap.configurations.python = {
-    {
-        type = 'python';
-        request = 'launch';
-        name = "Launch Python file";
-        program = "${file}";
-        pythonPath = function()
-            return 'python3'
-        end;
-    },
-}
+
 vim.api.nvim_exec([[
 function! NoIDE()
     let i = 0
@@ -441,8 +502,6 @@ function! Dag()
 endfunction
 command! -nargs=0 Dag :call Dag()
 ]], false)
-vim.keymap.set("n", "<C-p>",
-  "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
 EOB
 }
 
