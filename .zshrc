@@ -331,7 +331,7 @@ $I_WANT_PROMPT && {
 refresh_vim() {
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
--- config v1.2
+-- config v1.3
 vim.g.mapleader = ','
 if vim.fn.has('termguicolors') then
     vim.opt.termguicolors = true
@@ -339,14 +339,14 @@ end
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
-  vim.fn.system({
-    "git",
-    "clone",
-    "--filter=blob:none",
-    "https://github.com/folke/lazy.nvim.git",
-    "--branch=stable", -- latest stable release
-    lazypath,
-  })
+    vim.fn.system({
+        "git",
+        "clone",
+        "--filter=blob:none",
+        "https://github.com/folke/lazy.nvim.git",
+        "--branch=stable", -- latest stable release
+        lazypath,
+    })
 end
 vim.opt.rtp:prepend(lazypath)
 
@@ -354,7 +354,8 @@ require("lazy").setup({
     { "williamboman/mason.nvim" },
     { "itchyny/lightline.vim" },
     { "nvim-tree/nvim-web-devicons" },
-    { "sainnhe/gruvbox-material",
+    {
+        "sainnhe/gruvbox-material",
         config = function()
             vim.g.gruvbox_material_background = 'soft'
             vim.g.gruvbox_material_better_performance = 1
@@ -363,7 +364,12 @@ require("lazy").setup({
     },
     { "junegunn/vim-easy-align" },
     { "kevinhwang91/rnvimr" },
-    { "ldelossa/nvim-ide",
+    {
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate"
+    },
+    {
+        "ldelossa/nvim-ide",
         config = function()
             require('ide').setup({
                 icon_set = "nerd",
@@ -372,7 +378,7 @@ require("lazy").setup({
                     right = "git"
                 },
                 panel_groups = {
-                    explorer = { 
+                    explorer = {
                         require('ide.components.outline').Name,
                         require('ide.components.bufferlist').Name,
                         require('ide.components.explorer').Name,
@@ -397,9 +403,10 @@ require("lazy").setup({
             })
         end,
     },
-    { "airblade/vim-rooter",
+    {
+        "airblade/vim-rooter",
         config = function()
-            vim.g.rooter_patterns = {'.git'}
+            vim.g.rooter_patterns = { '.git' }
         end,
     },
     { "rcarriga/nvim-notify" },
@@ -408,41 +415,64 @@ require("lazy").setup({
     { "williamboman/mason-lspconfig.nvim" },
     { "hrsh7th/nvim-cmp" },
     { "hrsh7th/cmp-nvim-lsp" },
-    { "VonHeikemen/lsp-zero.nvim",
+    {
+        "VonHeikemen/lsp-zero.nvim",
         branch = "v2.x",
         config = function()
             local lsp = require('lsp-zero').preset({})
             lsp.on_attach(function(_, bufnr)
-                lsp.default_keymaps({buffer = bufnr})
+                lsp.default_keymaps({ buffer = bufnr })
             end)
             require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
             lsp.setup()
         end,
     },
+    {
+        "ray-x/guihua.lua",
+        build = "cd lua/fzy && make",
+        config = function()
+            require 'guihua.maps'.setup({
+                maps = {
+                    close_view = '<esc>'
+                }
+            })
+        end,
+    },
+    {
+        "ray-x/navigator.lua",
+        config = function()
+            require 'navigator'.setup({
+                mason = true
+            })
+        end,
+    },
     { "L3MON4D3/LuaSnip" },
-    { "mfussenegger/nvim-dap",
+    {
+        "mfussenegger/nvim-dap",
         config = function()
             local dap = require('dap')
             dap.configurations.python = {
                 {
-                    type = 'python';
-                    request = 'launch';
-                    name = "Launch Python file";
-                    program = "";
+                    type = 'python',
+                    request = 'launch',
+                    name = "Launch Python file",
+                    program = "",
                     pythonPath = function()
                         return 'python3'
-                    end;
+                    end,
                 },
             }
         end,
     },
-    { "rcarriga/nvim-dap-ui",
+    {
+        "rcarriga/nvim-dap-ui",
         config = function()
             require('dapui').setup()
         end,
     },
     { "mfussenegger/nvim-dap-python" },
-    { "ibhagwan/fzf-lua",
+    {
+        "ibhagwan/fzf-lua",
         branch = "main",
         config = function()
             vim.keymap.set("n", "<C-p>",
@@ -450,13 +480,15 @@ require("lazy").setup({
         end,
     },
     { "tpope/vim-dadbod" },
-    { "kristijanhusak/vim-dadbod-ui",
+    {
+        "kristijanhusak/vim-dadbod-ui",
         config = function()
             vim.g.db_ui_save_location = '~/Cells/db_ui'
         end,
     },
     { "SmiteshP/nvim-navic" },
-    { "utilyre/barbecue.nvim",
+    {
+        "utilyre/barbecue.nvim",
         config = function()
             require('barbecue').setup()
         end,
@@ -468,29 +500,29 @@ require("lazy").setup({
         opts = {},
         keys = {
             {
-            "s",
-            mode = { "n", "x", "o" },
-            function()
-                -- default options: exact mode, multi window, all directions, with a backdrop
-                require("flash").jump()
-            end,
-            desc = "Flash",
+                "s",
+                mode = { "n", "x", "o" },
+                function()
+                    -- default options: exact mode, multi window, all directions, with a backdrop
+                    require("flash").jump()
+                end,
+                desc = "Flash",
             },
             {
-            "S",
-            mode = { "n", "o", "x" },
-            function()
-                require("flash").treesitter()
-            end,
-            desc = "Flash Treesitter",
+                "S",
+                mode = { "n", "o", "x" },
+                function()
+                    require("flash").treesitter()
+                end,
+                desc = "Flash Treesitter",
             },
             {
-            "r",
-            mode = "o",
-            function()
-                require("flash").remote()
-            end,
-            desc = "Remote Flash",
+                "r",
+                mode = "o",
+                function()
+                    require("flash").remote()
+                end,
+                desc = "Remote Flash",
             },
         },
     },
