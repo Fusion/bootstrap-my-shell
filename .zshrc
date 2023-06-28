@@ -575,6 +575,9 @@ set editing-mode vi
 set keymap vi-insert
 EOB
 }
+bindkey '^a' beginning-of-line
+bindkey '^e' end-of-line
+bindkey '^w' backward-kill-word
 
 # tmux smug goodness
 refresh_smug() {
