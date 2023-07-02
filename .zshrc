@@ -331,7 +331,7 @@ $I_WANT_PROMPT && {
 refresh_vim() {
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
--- config v1.3
+-- config v1.4
 vim.g.mapleader = ','
 if vim.fn.has('termguicolors') then
     vim.opt.termguicolors = true
@@ -413,7 +413,21 @@ require("lazy").setup({
     { "dnlhc/glance.nvim" },
     { "neovim/nvim-lspconfig" },
     { "williamboman/mason-lspconfig.nvim" },
-    { "hrsh7th/nvim-cmp" },
+    {
+        "hrsh7th/nvim-cmp",
+        config = function()
+            local cmp = require('cmp')
+            cmp.setup({
+                mapping = cmp.mapping.preset.insert({
+                    ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+                    ['<C-f>'] = cmp.mapping.scroll_docs(4),
+                    ['<C-Space>'] = cmp.mapping.complete(),
+                    ['<C-e>'] = cmp.mapping.abort(),
+                    ['<CR>'] = cmp.mapping.confirm({ select = true }),
+                }),
+            })
+        end,
+    },
     { "hrsh7th/cmp-nvim-lsp" },
     {
         "VonHeikemen/lsp-zero.nvim",
@@ -486,6 +500,18 @@ require("lazy").setup({
             vim.g.db_ui_save_location = '~/Cells/db_ui'
         end,
     },
+    {
+        "kristijanhusak/vim-dadbod-completion",
+        config = function()
+            vim.api.nvim_exec(
+                [[
+                    autocmd FileType sql setlocal omnifunc=vim_dadbod_completion#omni
+                    autocmd FileType sql,mysql,plsql lua require('cmp').setup.buffer({ sources = {{ name = 'vim-dadbod-completion' }} })
+                ]],
+                false
+            )
+        end,
+    },
     { "SmiteshP/nvim-navic" },
     {
         "utilyre/barbecue.nvim",
@@ -525,6 +551,23 @@ require("lazy").setup({
                 desc = "Remote Flash",
             },
         },
+    },
+    {
+        "folke/which-key.nvim",
+        event = "VeryLazy",
+        init = function()
+            vim.o.timeout = true
+            vim.o.timeoutlen = 300
+        end,
+        opts = {
+            x = {
+                name = "Database",
+                u = { "<Cmd>DBUIToggle<Cr>", "Toggle UI" },
+                f = { "<Cmd>DBUIFindBuffer<Cr>", "Find buffer" },
+                r = { "<Cmd>DBUIRenameBuffer<Cr>", "Rename buffer" },
+                q = { "<Cmd>DBUILastQueryInfo<Cr>", "Last query info" },
+            },
+        }
     },
 })
 
