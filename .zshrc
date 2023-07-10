@@ -519,6 +519,7 @@ require("lazy").setup({
             require('barbecue').setup()
         end,
     },
+    { "sindrets/diffview.nvim" },
     {
         "folke/flash.nvim",
         event = "VeryLazy",
