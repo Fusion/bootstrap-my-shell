@@ -1,5 +1,3 @@
-# Fig pre block. Keep at the top of this file.
-[[ -f "$HOME/.fig/shell/zshrc.pre.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.pre.zsh"
 # If not running interactively, don't do anything
 
 case $- in
@@ -211,6 +209,7 @@ with import <nixpkgs> {}; [
     smug # tmuxinator-like
     ranger
     diff-so-fancy
+    pdsh
     ${nix_platform}
     ${nix_shell}
 ]
@@ -518,39 +517,6 @@ require("lazy").setup({
         config = function()
             require('barbecue').setup()
         end,
-    },
-    {
-        "folke/flash.nvim",
-        event = "VeryLazy",
-        ---@type Flash.Config
-        opts = {},
-        keys = {
-            {
-                "s",
-                mode = { "n", "x", "o" },
-                function()
-                    -- default options: exact mode, multi window, all directions, with a backdrop
-                    require("flash").jump()
-                end,
-                desc = "Flash",
-            },
-            {
-                "S",
-                mode = { "n", "o", "x" },
-                function()
-                    require("flash").treesitter()
-                end,
-                desc = "Flash Treesitter",
-            },
-            {
-                "r",
-                mode = "o",
-                function()
-                    require("flash").remote()
-                end,
-                desc = "Remote Flash",
-            },
-        },
     },
     {
         "folke/which-key.nvim",
@@ -861,8 +827,5 @@ dotfilesclone () {
 
 # Weaken security in some ways... but negates the need to run as root at all time
 alias sudo='sudo env "PATH=$PATH"'
-
-# Fig post block. Keep at the bottom of this file.
-[[ -f "$HOME/.fig/shell/zshrc.post.zsh" ]] && builtin source "$HOME/.fig/shell/zshrc.post.zsh"
 
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
