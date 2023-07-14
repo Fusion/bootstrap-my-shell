@@ -210,6 +210,7 @@ with import <nixpkgs> {}; [
     ranger
     diff-so-fancy
     pdsh
+    nushell
     ${nix_platform}
     ${nix_shell}
 ]
