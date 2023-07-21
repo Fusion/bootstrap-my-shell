@@ -680,7 +680,7 @@ $I_WANT_COMMANDS && {
         && sudo chmod +x $HOME/.local/bin/exa-wrapper.sh
     }
 }
-[[ -f $HOME/.local/bin/exa-wrapper.sh ]] || {
+[[ -f $HOME/.local/bin/exa-wrapper.sh ]] && {
     alias ls="exa-wrapper.sh"
 }
 
