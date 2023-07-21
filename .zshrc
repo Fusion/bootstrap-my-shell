@@ -793,6 +793,17 @@ icd() {
     cd -- "$(cat $tmpfile)"
 }
 
+# c-specific
+gitprep() {
+	[[ -f ./git_ssh ]] && { export GIT_SSH=./git_ssh; } || {
+		[[ -f ./keys/git_ssh ]] && { export GIT_SSH=./keys/git_ssh; } || {
+			[[ "$SSH_AGENT_PID" == "" ]] && eval `ssh-agent -k`
+			eval `ssh-agent -s`
+			ssh-add ~/.ssh/github-convoso-opensips
+		}
+	}
+}
+
 refresh_all() {
     refresh_commands
     refresh_prompt
