@@ -331,7 +331,7 @@ $I_WANT_PROMPT && {
 refresh_vim() {
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
--- config v1.4
+-- config v1.5
 vim.g.mapleader = ','
 if vim.fn.has('termguicolors') then
     vim.opt.termguicolors = true
@@ -370,38 +370,6 @@ require("lazy").setup({
     },
     {
         "ldelossa/nvim-ide",
-        config = function()
-            require('ide').setup({
-                icon_set = "nerd",
-                panels = {
-                    left = "explorer",
-                    right = "git"
-                },
-                panel_groups = {
-                    explorer = {
-                        require('ide.components.outline').Name,
-                        require('ide.components.bufferlist').Name,
-                        require('ide.components.explorer').Name,
-                        require('ide.components.bookmarks').Name,
-                        require('ide.components.callhierarchy').Name,
-                    },
-                    git = {
-                        require('ide.components.changes').Name,
-                        require('ide.components.commits').Name,
-                        require('ide.components.timeline').Name,
-                        require('ide.components.branches').Name,
-                    },
-                },
-                workspaces = {
-                    auto_open = 'both',
-                },
-                panel_sizes = {
-                    left = 30,
-                    right = 30,
-                    bottom = 15
-                }
-            })
-        end,
     },
     {
         "airblade/vim-rooter",
@@ -553,20 +521,62 @@ vim.opt.pastetoggle = "<F2>"
 vim.opt.list = true
 vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
 
+function Open_nvim_ide_panels()
+    if InstanceIde == nil then
+        InstanceIde = require('ide')
+        InstanceIde.setup({
+            icon_set = "nerd",
+            panels = {
+                left = "explorer",
+                right = "git"
+            },
+            panel_groups = {
+                explorer = {
+                    require('ide.components.outline').Name,
+                    require('ide.components.bufferlist').Name,
+                    require('ide.components.explorer').Name,
+                    require('ide.components.bookmarks').Name,
+                    require('ide.components.callhierarchy').Name,
+                },
+                git = {
+                    require('ide.components.changes').Name,
+                    require('ide.components.commits').Name,
+                    require('ide.components.timeline').Name,
+                    require('ide.components.branches').Name,
+                },
+            },
+            workspaces = {
+                auto_open = 'both',
+            },
+            panel_sizes = {
+                left = 30,
+                right = 30,
+                bottom = 15
+            }
+        })
+    end
+    local ws = require('ide.workspaces.workspace_registry').get_workspace(vim.api.nvim_get_current_tabpage())
+    if ws ~= nil then
+        ws.open_panel(require('ide.panels.panel').PANEL_POS_BOTTOM)
+        ws.open_panel(require('ide.panels.panel').PANEL_POS_LEFT)
+        ws.open_panel(require('ide.panels.panel').PANEL_POS_RIGHT)
+    end
+end
+
+function Close_nvim_ide_panels()
+    if InstanceIde ~= nil then
+        local ws = require('ide.workspaces.workspace_registry').get_workspace(vim.api.nvim_get_current_tabpage())
+        if ws ~= nil then
+            ws.close_panel(require('ide.panels.panel').PANEL_POS_BOTTOM)
+            ws.close_panel(require('ide.panels.panel').PANEL_POS_LEFT)
+            ws.close_panel(require('ide.panels.panel').PANEL_POS_RIGHT)
+        end
+    end
+end
+
 vim.api.nvim_exec([[
-function! NoIDE()
-    let i = 0
-    while i < 3
-        close 1
-        let i += 1
-    endwhile
-    let i = 0
-    while i < 4
-        close 2
-        let i += 1
-    endwhile
-endfunction
-command! -nargs=0 NoIDE :call NoIDE()
+command! -nargs=0 IDE lua Open_nvim_ide_panels()
+command! -nargs=0 NoIDE lua Close_nvim_ide_panels()
 function! Sql()
     NoIDE
     DBUI
@@ -778,6 +788,9 @@ export NVM_DIR="$HOME/.nvm"
     }
 }
 
+# hello tailscale
+alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+
 # mackup specials
 [[ -d ~/.mackup ]] || {
     mkdir -p ~/.mackup
@@ -795,13 +808,19 @@ icd() {
 
 # c-specific
 gitprep() {
-	[[ -f ./git_ssh ]] && { export GIT_SSH=./git_ssh; } || {
-		[[ -f ./keys/git_ssh ]] && { export GIT_SSH=./keys/git_ssh; } || {
-			[[ "$SSH_AGENT_PID" == "" ]] && eval `ssh-agent -k`
-			eval `ssh-agent -s`
-			ssh-add ~/.ssh/github-convoso-opensips
-		}
-	}
+    [[ -f ./git_ssh ]] && { export GIT_SSH=./git_ssh; } || {
+        [[ -f ./keys/git_ssh ]] && { export GIT_SSH=./keys/git_ssh; } || {
+            [[ "$SSH_AGENT_PID" == "" ]] && eval `ssh-agent -k`
+            eval `ssh-agent -s`
+            ssh-add ~/.ssh/github-convoso-opensips
+        }
+    }
+}
+
+gitid() {
+    [[ "$SSH_AGENT_PID" == "" ]] && eval `ssh-agent -k`
+    eval `ssh-agent -s`
+    [[ "$1" == "1" ]] && ssh-add ~/.ssh/cfr_id_ed25519
 }
 
 refresh_all() {
