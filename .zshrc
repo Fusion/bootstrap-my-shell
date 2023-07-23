@@ -459,6 +459,8 @@ require("lazy").setup({
         config = function()
             vim.keymap.set("n", "<C-p>",
                 "<cmd>lua require('fzf-lua').files()<CR>", { silent = true })
+            vim.keymap.set("n", "<C-\\\\>",
+                "<cmd>lua require('fzf-lua').buffers()<CR>", { silent = true })
         end,
     },
     { "tpope/vim-dadbod" },
