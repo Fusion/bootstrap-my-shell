@@ -109,8 +109,13 @@ gd: go to definition
 <ctrl>w s/<ctrl>w v: split
 <ctrl>p: fzf files
 set [no]list: display invisible characters
+set diffopt+=iwhite: ignore whitespace in diff
 rvi: remote vim edit
 lcd: change directory in vim
+<ctr>v <shit>I: start inserting block, until <esc>
+:g/^\s*$/d: g to all 0+space blank lines and delete
+:put =eval(join(getline(1, '$'), '+')): insert eval of join all lines with '+' operator.
+:!open %: execute open of current file
 NoIDE: remove IDE / DBUI: sql editor / Sql: NoIDE+DBUI / Dag: NoIDE+dag.toggle
 
 EOB
