@@ -842,6 +842,9 @@ git config --global core.pager "diff-so-fancy | less --tabs=4 -RFX"
 git config --global interactive.diffFilter "diff-so-fancy --patch"
 git config --global color.ui true
 
+# man
+man() { command man $@ | col -bx | bat -l man -p }
+
 # Some self referential work
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
 alias dottig="GIT_DIR=$HOME/.dotfiles GIT_WORK_TREE=$HOME tig"
