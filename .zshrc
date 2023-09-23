@@ -223,14 +223,14 @@ EOB
 
 
     [[ -v I_HAVE_NIX ]] && {
-        defaultprofilepath=$(\ls -l -d -- /nix/store/*-nix-[0-9][.][0-9]*)
+        defaultprofilepath=$(\ls -d -- /nix/store/*-nix-[0-9][.][0-9]*)
         [[ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]] && { source $HOME/.nix-profile/etc/profile.d/nix.sh; }
-        /nix/var/nix/profiles/default/bin/nix-env -irf ~/.env.nix
         # make up for losing default profile in some environments
         [[ -f /nix/var/nix/profiles/default ]] || {
             mkdir -p /nix/var/nix/profiles \
             && sudo ln -s $defaultprofilepath /nix/var/nix/profiles/default
         }
+        /nix/var/nix/profiles/default/bin/nix-env -irf ~/.env.nix
     }
     [[ -v I_HAVE_BREW ]] && {
         for pkg in $(awk 'NR>1 {print $1}' ~/.env.nix | grep -v ']'); do
@@ -867,7 +867,11 @@ dotfilesclone () {
 }
 
 
-# Weaken security in some ways... but negates the need to run as root at all time
-alias sudo='sudo env "PATH=$PATH"'
-
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+
+# bun completions
+[ -s "/Users/chris/.bun/_bun" ] && source "/Users/chris/.bun/_bun"
+
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
