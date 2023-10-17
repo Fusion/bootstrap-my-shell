@@ -151,6 +151,22 @@ Ruby:
 
 EOB
         ;;
+    kitty)
+    cat << EOB
+
+KITTY:
+----
+<ctrl><shit><right click>: open output in pager
+<ctrl><shit>h: scrollback in pager
+<ctrl><shit>z: previous shell prompt
+<ctrl><shit>l: next layout
+<ctrl><shit>[: prev window
+<ctrl><shit>f: move window forward
+<ctrl><shit>u: insert unicode
+<ctrl><shit><esc>: kitty shell
+
+EOB
+        ;;
     *)
     cat << EOB
 
@@ -165,6 +181,7 @@ refresh_*: re-sync environment
 help vim: vim help
 help dap: nvim debugger help
 help chef: various chef configuration info
+help kitty: kitty commands and shortcuts
 
 EOB
         ;;
