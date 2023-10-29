@@ -353,7 +353,7 @@ $I_WANT_PROMPT && {
 refresh_vim() {
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
--- config v1.5
+-- config v1.6
 vim.g.mapleader = ','
 if vim.fn.has('termguicolors') then
     vim.opt.termguicolors = true
@@ -373,6 +373,7 @@ end
 vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
+    checker = { enabled = true, frequency = 86400 },
     { "williamboman/mason.nvim" },
     { "itchyny/lightline.vim" },
     { "nvim-tree/nvim-web-devicons" },
