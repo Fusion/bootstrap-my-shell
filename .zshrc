@@ -351,6 +351,12 @@ $I_WANT_PROMPT && {
 # nvim goodness
 
 refresh_vim() {
+    # pre-neovim 1.0 workaround
+    [[ -f ~/.local/share/nvim/lazy/neogit/lua/neogit/lib/hl.lua ]] && sr=~/.local/share/nvim/lazy/neogit/lua/neogit/lib/hl.lua
+    [[ "$sr" == "" ]] || {
+        sed -i .bak -e 's/local color.*/local color = vim.api.nvim_get_hl_by_name(name, true)/' -e 's/local exists.*/local exists, hl = pcall(vim.api.nvim_get_hl_by_name, hl_name, true)/' $sr
+    }
+    #
     mkdir -p ~/.config/nvim
     cat <<-EOB > ~/.config/nvim/init.lua 
 -- config v1.6
