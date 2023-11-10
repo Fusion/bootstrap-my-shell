@@ -335,7 +335,7 @@ $I_WANT_PROMPT && {
 }
 
 [[ -d ~/.poshthemes ]] && {
-    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/aliens.omp.json)"
+    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/montys.omp.json)"
 }
 
 # direnv sources a directory .envrc file

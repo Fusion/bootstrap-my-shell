@@ -32,28 +32,9 @@ program = ""
 args = ["--login"]
 
 [fonts]
+family = "Inconsolata Nerd Font Mono"
 size = 18.0
 extras = []
-
-[fonts.regular]
-family = "cascadiamono"
-weight = 400
-style = "normal"
-
-[fonts.bold]
-family = "cascadiamono"
-weight = 800
-style = "normal"
-
-[fonts.bold-italic]
-family = "cascadiamono"
-weight = 800
-style = "italic"
-
-[fonts.italic]
-family = "cascadiamono"
-weight = 400
-style = "italic"
 
 [developer]
 enable-fps-counter = false
