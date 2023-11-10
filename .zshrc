@@ -232,6 +232,7 @@ with import <nixpkgs> {}; [
     ranger
     diff-so-fancy
     pdsh
+    zellij
     nushell
     ${nix_platform}
     ${nix_shell}
