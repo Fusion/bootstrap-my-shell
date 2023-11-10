@@ -233,6 +233,7 @@ with import <nixpkgs> {}; [
     diff-so-fancy
     pdsh
     zellij
+    xplr
     nushell
     ${nix_platform}
     ${nix_shell}
