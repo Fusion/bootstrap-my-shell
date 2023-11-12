@@ -167,6 +167,17 @@ KITTY:
 
 EOB
         ;;
+    rio)
+    cat << EOB
+
+RIO:
+----
+Terminal support:
+      curl -LO https://raw.githubusercontent.com/raphamorim/rio/c2d2e6629941b790117c80b188ceb12edbf6d444/misc/rio.terminfo
+      sudo tic -xe rio rio.terminfo
+
+EOB
+        ;;
     *)
     cat << EOB
 
@@ -182,6 +193,7 @@ help vim: vim help
 help dap: nvim debugger help
 help chef: various chef configuration info
 help kitty: kitty commands and shortcuts
+help rio: rio commands and shortcuts
 
 EOB
         ;;
@@ -782,6 +794,7 @@ export PAGER="bat"
     alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
 }
 [[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm ssh"
+[[ "$TERM" == "rio" ]] && alias ssh="TERM=xterm-256color ssh"
 [[ -d ~/.krew ]] && export PATH="${PATH}:${HOME}/.krew/bin"
 
 # fzf keys
