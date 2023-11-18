@@ -85,12 +85,26 @@ EOB
 
 $I_HAVE_NIX || $I_HAVE_BREW || I_WANT_COMMANDS=false
 
-case "$(uname)" in
+case "$(uname -s)" in
     Linux)
         export OS=Linux
+        export OSNAME=linux
     ;;
     Darwin)
         export OS=OSX
+        export OSNAME=darwin
+    ;;
+    *)
+    ;;
+esac
+case "$(uname -m)" in
+    arm64)
+        export ARCHVENDOR=arm
+        export ARCHNAME=arm64
+    ;;
+    x86_64)
+        export ARCHVENDOR=intel
+        export ARCHNAME=amd64
     ;;
     *)
     ;;
@@ -188,6 +202,7 @@ dotfiles: manage dotfiles git repo
 smug: manage tmux layouts
 icd: interactive cd using ranger
 refresh_*: re-sync environment
+fetch_command <gitorg/gitpkg> <binaryname>: retrieve commands from git
 
 help vim: vim help
 help dap: nvim debugger help
@@ -825,15 +840,6 @@ export NVM_DIR="$HOME/.nvm"
 # haskell
 [ -f "/Users/chris/.ghcup/env" ] && source "/Users/chris/.ghcup/env" # ghcup-env
 
-# khoj because why note <- see what I did there
-[[ $(command -v khoj) ]] && {
-    [[ $(command -v tmux) ]] && {
-        [[ $(ps aux | grep 'kho[j]') == "" ]] && {
-            tmux new-session -d -s khoj 'khoj --no-gui'
-        }
-    }
-}
-
 # hello tailscale
 alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 
@@ -883,6 +889,47 @@ git config --global color.ui true
 
 # man
 man() { command man $@ | col -bx | bat -l man -p }
+
+# more commands
+fetch_command() {
+    [[ "$2" == "" ]] && { echo "Please provide <gitrepo>/<gitpkg> <binaryname>"; return; }
+    pkgurl=$(curl -s "https://api.github.com/repos/$1/releases/latest" \
+        | grep "browser_download_url" \
+        | grep "gz" \
+        | grep $OSNAME \
+        | grep $ARCHNAME \
+        | grep -v sha256 \
+        | awk '{gsub(/"/, "", $2); print $2}')
+    [[ "$pkgurl" == "" ]] && {
+        [[ "$OSNAME" == "darwin" && "$ARCHNAME" != "amd64" ]] && {
+            echo "(attempting to retrieve lower performance rosetta version)"
+            pkgurl=$(curl -s "https://api.github.com/repos/$1/releases/latest" \
+                | grep "browser_download_url" \
+                | grep "gz" \
+                | grep $OSNAME \
+                | grep amd64 \
+                | grep -v sha256 \
+                | awk '{gsub(/"/, "", $2); print $2}')
+        }
+    }
+    [[ "$pkgurl" == "" ]] && { echo "Unable to retrieve usable package name"; return; }
+    wrkdir=$(mktemp -d)
+    cd $wrkdir
+    curl -s -LO $pkgurl
+    tar zxvf *gz &>/dev/null
+    [[ "$OS" == "Linux" ]] && {
+        binary=$(find . -perm /111 -type f -name $2) 2>/dev/null
+    } || {
+        binary=$(find . -perm +111 -type f -name $2) 2>/dev/null
+    }
+    [[ "$binary" == "" ]] && {
+        echo "Could not find requested binary\nAvailable:"
+        ls -R
+        return
+    }
+    cp $binary ~/.local/bin/
+    echo "$2 installed to ~/.local/bin"
+}
 
 # Some self referential work
 alias dotfiles="git --git-dir=$HOME/.dotfiles --work-tree=$HOME"
