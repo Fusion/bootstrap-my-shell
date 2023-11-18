@@ -88,11 +88,11 @@ $I_HAVE_NIX || $I_HAVE_BREW || I_WANT_COMMANDS=false
 case "$(uname -s)" in
     Linux)
         export OS=Linux
-        export OSNAME=linux
+        export OSNAMES=(linux)
     ;;
     Darwin)
         export OS=OSX
-        export OSNAME=darwin
+        export OSNAMES=(darwin osx macos macosx)
     ;;
     *)
     ;;
@@ -100,11 +100,18 @@ esac
 case "$(uname -m)" in
     arm64)
         export ARCHVENDOR=arm
-        export ARCHNAME=arm64
+        case "$OS" in
+            Linux)
+                export ARCHNAMES=(arm64)
+            ;;
+            Darwin)
+                export ARCHNAMES=(arm64 amd64 x86_64 x64)
+            ;;
+        esac
     ;;
     x86_64)
         export ARCHVENDOR=intel
-        export ARCHNAME=amd64
+        export ARCHNAMES=(amd64 x86_64 x64)
     ;;
     *)
     ;;
@@ -893,25 +900,16 @@ man() { command man $@ | col -bx | bat -l man -p }
 # more commands
 fetch_command() {
     [[ "$2" == "" ]] && { echo "Please provide <gitrepo>/<gitpkg> <binaryname>"; return; }
-    pkgurl=$(curl -s "https://api.github.com/repos/$1/releases/latest" \
-        | grep "browser_download_url" \
-        | grep "gz" \
-        | grep $OSNAME \
-        | grep $ARCHNAME \
-        | grep -v sha256 \
-        | awk '{gsub(/"/, "", $2); print $2}')
-    [[ "$pkgurl" == "" ]] && {
-        [[ "$OSNAME" == "darwin" && "$ARCHNAME" != "amd64" ]] && {
-            echo "(attempting to retrieve lower performance rosetta version)"
-            pkgurl=$(curl -s "https://api.github.com/repos/$1/releases/latest" \
-                | grep "browser_download_url" \
-                | grep "gz" \
-                | grep $OSNAME \
-                | grep amd64 \
-                | grep -v sha256 \
-                | awk '{gsub(/"/, "", $2); print $2}')
-        }
-    }
+    pkgurl=""
+    curl -s "https://api.github.com/repos/$1/releases/latest" | jq -r '.assets[] .browser_download_url' \
+    | while read pkgname; do
+        [[ "$pkgname" == *"gz" ]] || { continue; }
+        for osname in ${OSNAMES[@]}; do
+            for archname in ${ARCHNAMES[@]}; do
+                [[ "$(echo $pkgname | grep $osname | grep $archname)" != "" ]] && { pkgurl=$pkgname; break; }
+            done
+        done
+    done
     [[ "$pkgurl" == "" ]] && { echo "Unable to retrieve usable package name"; return; }
     wrkdir=$(mktemp -d)
     cd $wrkdir
