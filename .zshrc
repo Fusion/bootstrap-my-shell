@@ -401,6 +401,20 @@ if vim.fn.has('termguicolors') then
     vim.opt.termguicolors = true
 end
 
+function CommandToStartifyTable(command)
+    return function()
+        local cmd_output = vim.fn.systemlist(command .. " 2>/dev/null")
+        local files =
+            vim.tbl_map(
+            function(v)
+                return {line = v, path = v}
+            end,
+            cmd_output
+        )
+        return files
+    end
+end
+
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -552,6 +566,22 @@ require("lazy").setup({
         "utilyre/barbecue.nvim",
         config = function()
             require('barbecue').setup()
+        end,
+    },
+    {
+        "mhinz/vim-startify",
+        config = function()
+            vim.g.startify_custom_header = { "~~ Chris' Stuff ~~" }
+            vim.g.startify_lists = {
+                { type = 'sessions', header = {'Sessions'} },
+                { type = 'files', header = {'MRU'} },
+                { type = "dir", header = {'MRU ' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':t')} },
+                { type = 'bookmarks', header = {'Bookmarks'} },
+                { type = 'commands', header = {'Commands'} }},
+                { type = CommandToStartifyTable("git ls-files -m"), header = {'Git modified'} },
+                { type = CommandToStartifyTable("git ls-files -o --exclude-standard"), header = {'Git untracked'} }
+
+
         end,
     },
     { "sindrets/diffview.nvim" },
