@@ -880,6 +880,18 @@ export NVM_DIR="$HOME/.nvm"
 # hello tailscale
 alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
 
+# Fabric?
+[[ $(command -v fab2) ]] && {
+_complete_fab2() {
+    collection_arg=''
+    if [[ "${words}" =~ "(-c|--collection) [^ ]+" ]]; then
+        collection_arg=$MATCH
+    fi
+    reply=( $(fab2 ${=collection_arg} --complete -- ${words}) )
+}
+compctl -K _complete_fab2 + -f fab2
+}
+
 # mackup specials
 [[ -d ~/.mackup ]] || {
     mkdir -p ~/.mackup
