@@ -839,6 +839,7 @@ $I_WANT_COMMANDS && {
         alias vi=~/.nix-profile/bin/nvim
         alias vim=~/.nix-profile/bin/nvim
     }
+    alias vimdiff="nvim -d"
 }
 export VISUAL="vim"
 export PAGER="bat"
@@ -879,6 +880,9 @@ export NVM_DIR="$HOME/.nvm"
 
 # hello tailscale
 alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
+
+# meld
+alias meld="open -W -a Meld $@"
 
 # Fabric?
 [[ $(command -v fab2) ]] && {
