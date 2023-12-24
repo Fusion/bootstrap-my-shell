@@ -729,6 +729,28 @@ bindkey '^a' beginning-of-line
 bindkey '^e' end-of-line
 bindkey '^w' backward-kill-word
 
+# missing shell completions
+
+refresh_completions() {
+    dst=$(printf "%s\n" "${fpath[@]}" | grep misc)
+    [[ "$dst" == "" ]] && {
+        echo "I need to know where zplug misc completions are located."
+        return
+    }
+    [[ -d /tmp/sh-manpage-completions ]] || {
+        cd /tmp && git clone https://github.com/fusion/sh-manpage-completions.git
+    }
+    cd /tmp/sh-manpage-completions
+    cp -f completions/zsh/* $dst/
+    return
+    for file in $(ls /usr/share/man/man1); do
+        cmd=${file%.1}
+        command -v $cmd &>/dev/null && {
+            ./run.sh /usr/share/man/man1/$cmd.1
+        }
+    done
+}
+
 # tmux smug goodness
 refresh_smug() {
     mkdir -p ~/.config/smug
