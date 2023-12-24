@@ -741,14 +741,13 @@ refresh_completions() {
         cd /tmp && git clone https://github.com/fusion/sh-manpage-completions.git
     }
     cd /tmp/sh-manpage-completions
-    cp -f completions/zsh/* $dst/
-    return
     for file in $(ls /usr/share/man/man1); do
         cmd=${file%.1}
         command -v $cmd &>/dev/null && {
             ./run.sh /usr/share/man/man1/$cmd.1
         }
     done
+    cp -f completions/zsh/* $dst/
 }
 
 # tmux smug goodness
