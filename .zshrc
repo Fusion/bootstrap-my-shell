@@ -741,10 +741,17 @@ refresh_completions() {
         cd /tmp && git clone https://github.com/fusion/sh-manpage-completions.git
     }
     cd /tmp/sh-manpage-completions
-    for file in $(ls /usr/share/man/man1); do
-        cmd=${file%.1}
+    echo "##########################################################"
+    echo "# Note:                                                  #"
+    echo "# If you see an error about FlexLexer.h, you need to:    #"
+    echo "#     sudo apt install libfl-dev                         #"
+    echo "##########################################################"
+    for cmd in $(\ls /usr/share/man/man1); do
+        cmdname=$cmd
+        cmd=${cmd%.gz*}
+        cmd=${cmd%.1*}
         command -v $cmd &>/dev/null && {
-            ./run.sh /usr/share/man/man1/$cmd.1
+            ./run.sh /usr/share/man/man1/$cmdname
         }
     done
     cp -f completions/zsh/* $dst/
