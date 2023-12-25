@@ -310,6 +310,7 @@ $I_WANT_PLUGINS && {
     source ~/.zplug/init.zsh
 
     zplug 'wfxr/forgit'
+    zplug "zsh-users/zsh-syntax-highlighting", defer:2
 
     $(zplug check) || {
         printf "Install zplug? [y/N]: "
