@@ -750,6 +750,7 @@ refresh_completions() {
         cmdname=$cmd
         cmd=${cmd%.gz*}
         cmd=${cmd%.1*}
+        [[ "$cmd" == "[" ]] && { continue; }
         command -v $cmd &>/dev/null && {
             ./run.sh /usr/share/man/man1/$cmdname
         }
