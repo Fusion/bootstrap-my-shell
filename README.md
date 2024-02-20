@@ -24,3 +24,11 @@ dotfilesclone
 ```bash
 sudo rm -rf /nix .env.cfr-setup .env.nix $HOME/.nix-profile
 ```
+
+# Issues
+
+Q: dialogs does not build and complains about missing curses header files
+
+A: `sudo apt install libncurses-dev` then perform cleanup and try again
+
+

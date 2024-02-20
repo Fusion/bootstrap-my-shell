@@ -884,7 +884,7 @@ export PAGER="bat"
 p=$(which fzf)
 if [[ $? -eq 0 ]]; then
     [[ -v I_HAVE_NIX ]] && {
-        sp="$(find /nix/store -maxdepth 1 -type d -name '*fzf*' -not -name '*man')"
+        sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
         if [[ "$sp" != "" ]]; then
             while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh
         fi
