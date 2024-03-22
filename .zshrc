@@ -188,14 +188,29 @@ KITTY:
 
 EOB
         ;;
-    rio)
+    git)
     cat << EOB
 
-RIO:
+GIT:
 ----
-Terminal support:
-      curl -LO https://raw.githubusercontent.com/raphamorim/rio/c2d2e6629941b790117c80b188ceb12edbf6d444/misc/rio.terminfo
-      sudo tic -xe rio rio.terminfo
+Enforce git key:
+    export GIT_SSH_COMMAND='ssh -o IdentitiesOnly=yes -i ~/.ssh/<key>'
+Use ad-hoc difftool (e.g. difftastic):
+    export GIT_EXTERNAL_DIFF=difft
+
+EOB
+        ;;
+    rg)
+    cat << EOB
+
+ripgrep:
+--------
+Examples:
+    rg 'hello world'
+    rg 'hello world' -tjs # .js files only
+    rg 'hello world' -Tjs # except .js files
+    rg '\bword\b'         # pattern to look up a word between blank spaces
+Use '-l' and '-L' to show files including/not including pattern.
 
 EOB
         ;;
@@ -215,7 +230,8 @@ help vim: vim help
 help dap: nvim debugger help
 help chef: various chef configuration info
 help kitty: kitty commands and shortcuts
-help rio: rio commands and shortcuts
+help git: git tips and tricks
+help rg: ripgrep help
 
 EOB
         ;;
@@ -265,6 +281,7 @@ with import <nixpkgs> {}; [
     smug # tmuxinator-like
     ranger
     diff-so-fancy
+    difftastic
     pdsh
     zellij
     xplr
