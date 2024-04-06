@@ -216,6 +216,17 @@ Use '-l' and '-L' to show files including/not including pattern.
 
 EOB
         ;;
+    fzf)
+    cat << EOB
+
+fzf:
+--------
+Examples:
+    kill **<TAB>
+    ls <CTRL>t
+
+EOB
+        ;;
     *)
     cat << EOB
 
@@ -234,6 +245,7 @@ help chef: various chef configuration info
 help kitty: kitty commands and shortcuts
 help git: git tips and tricks
 help rg: ripgrep help
+help fzf: fzf help
 
 EOB
         ;;
@@ -906,11 +918,12 @@ if [[ $? -eq 0 ]]; then
     [[ -v I_HAVE_NIX ]] && {
         sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
         if [[ "$sp" != "" ]]; then
-            while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh
+            while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh && source $sp/bin/../share/fzf/completion.zsh
         fi
     }
     [[ -v I_HAVE_BREW ]] && {
         source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
+        source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
     }
 fi
 
