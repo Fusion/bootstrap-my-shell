@@ -1059,6 +1059,8 @@ dotfilesclone () {
     && echo "To view tracked files: 'dotfiles ls-files'"
 }
 
+# fix brew and python being annoying... use pyenv
+export PATH=$HOME/.pyenv/shims:$PATH
 
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
 
