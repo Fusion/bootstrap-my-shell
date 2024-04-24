@@ -1073,3 +1073,7 @@ export PATH="$BUN_INSTALL/bin:$PATH"
 
 # CodeWhisperer post block. Keep at the bottom of this file.
 [[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh"
+
+command -v thefuck &>/dev/null && {
+    eval $(thefuck --alias)
+}

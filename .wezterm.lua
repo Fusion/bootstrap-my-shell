@@ -6,7 +6,7 @@ if wezterm.config_builder then
     config = wezterm.config_builder()
 end
 
-config.color_scheme = 'Catppuccin Mocha'
+config.color_scheme = 'Dracula (Official)'
 config.font = wezterm.font 'Inconsolata Nerd Font Mono'
 config.font_size = 18.0
 
@@ -22,16 +22,9 @@ config.colors = {
 
 config.scrollback_lines = 50000
 
-config.window_background_gradient = {
-    orientation = 'Vertical',
-    colors = {
-        '#0f0c29',
-        '#302b63',
-        '#24243e',
-    },
-    interpolation = 'Linear',
-    blend = 'Rgb',
-}
+config.window_background_opacity = 0.8
+config.macos_window_background_blur = 20
+
 
 config.keys = {
     {
