@@ -235,7 +235,7 @@ CFR various help items:
 forgit: interactive git -- \`ga\` etc. (for more: \`aliases\`)
 dotfiles: manage dotfiles git repo
 smug: manage tmux layouts
-icd: interactive cd using ranger
+icd: interactive cd using xplr
 refresh_*: re-sync environment
 fetch_command <gitorg/gitpkg> <binaryname>: retrieve commands from git
 
@@ -293,14 +293,16 @@ with import <nixpkgs> {}; [
     clac # rpm calculator
     jc # output to json
     smug # tmuxinator-like
-    ranger
     diff-so-fancy
     difftastic
-    pdsh
-    zellij
-    xplr
+    pdsh # multi ssh
+    zellij # multi window terminal
+    xplr # file explorer
     nushell
     lazygit
+    gping # multi ping with jitter
+    broot # tree explorer
+    hyperfine # benchmark commands
     ${nix_platform}
     ${nix_shell}
 ]
@@ -969,9 +971,7 @@ EOB
 
 # interactive cd
 icd() {
-    local tmpfile="$(mktemp -t tmp.XXXXXX)"
-    ranger --choosedir=$tmpfile
-    cd -- "$(cat $tmpfile)"
+    cd -- "$(xplr)"
 }
 
 # c-specific
