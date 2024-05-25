@@ -290,6 +290,7 @@ with import <nixpkgs> {}; [
     direnv # run .envrc in current directory
     git
     gitui
+    tig # yeah gitui and tig suit a different need
     clac # rpm calculator
     jc # output to json
     smug # tmuxinator-like
