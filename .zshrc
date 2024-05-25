@@ -1,5 +1,5 @@
-# CodeWhisperer pre block. Keep at the top of this file.
-[[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.pre.zsh"
+# Q pre block. Keep at the top of this file.
+[[ -f "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh" ]] && builtin source "${HOME}/Library/Application Support/amazon-q/shell/zshrc.pre.zsh"
 # If not running interactively, don't do anything
 
 case $- in
@@ -469,11 +469,19 @@ require("lazy").setup({
     { "itchyny/lightline.vim" },
     { "nvim-tree/nvim-web-devicons" },
     {
-        "sainnhe/gruvbox-material",
+        "scottmckendry/cyberdream.nvim",
+        lazy = false,
+        priority = 1000,
         config = function()
-            vim.g.gruvbox_material_background = 'soft'
-            vim.g.gruvbox_material_better_performance = 1
-            vim.cmd [[colorscheme gruvbox-material]]
+            require("cyberdream").setup({
+                -- Recommended - see "Configuring" below for more config options
+                transparent = true,
+                italic_comments = true,
+                hide_fillchars = true,
+                borderless_telescope = true,
+                terminal_colors = true,
+            })
+            vim.cmd("colorscheme cyberdream") -- set the colorscheme
         end,
     },
     { "junegunn/vim-easy-align" },
@@ -1069,11 +1077,6 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
-# CodeWhisperer post block. Keep at the bottom of this file.
-[[ -f "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh" ]] && builtin source "${HOME}/Library/Application Support/codewhisperer/shell/zshrc.post.zsh"
-
-command -v thefuck &>/dev/null && {
+export PATH="$BUN_INSTALL/bin:$PATH"command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
