@@ -333,28 +333,31 @@ $I_WANT_COMMANDS && {
 
 # ZSH plugins
 
-$I_WANT_PLUGINS && {
-    [[ "$SHELL" =~ zsh ]] && {
-        [[ -f ~/.zplug/init.zsh ]] || {
-            curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
-        }
-    }
-}
+# Alas, this really slows down launching a new session.
+# Specifically, the .zplug/init.zsh section below does.
 
-[[ -f ~/.zplug/init.zsh ]] && {
-    source ~/.zplug/init.zsh
-
-    zplug 'wfxr/forgit'
-    zplug "zsh-users/zsh-syntax-highlighting", defer:2
-
-    $(zplug check) || {
-        printf "Install zplug? [y/N]: "
-        if read -q; then
-            echo; zplug install
-        fi
-    }
-    zplug load > /dev/null
-}
+#$I_WANT_PLUGINS && {
+#    [[ "$SHELL" =~ zsh ]] && {
+#        [[ -f ~/.zplug/init.zsh ]] || {
+#            curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
+#        }
+#    }
+#}
+#
+#[[ -f ~/.zplug/init.zsh ]] && {
+#    source ~/.zplug/init.zsh
+#
+#    zplug 'wfxr/forgit'
+#    zplug "zsh-users/zsh-syntax-highlighting", defer:2
+#
+#    $(zplug check) || {
+#        printf "Install zplug? [y/N]: "
+#        if read -q; then
+#            echo; zplug install
+#        fi
+#    }
+#    zplug load > /dev/null
+#}
 
 [[ "$SHELL" =~ zsh ]] && { autoload -Uz compinit && compinit; }
 
@@ -1081,3 +1084,5 @@ export BUN_INSTALL="$HOME/.bun"
 export PATH="$BUN_INSTALL/bin:$PATH"command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
+
+. "$HOME/.cargo/env"
