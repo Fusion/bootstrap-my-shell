@@ -1079,7 +1079,9 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 
 # bun
 export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"command -v thefuck &>/dev/null && {
+export PATH="$BUN_INSTALL/bin:$PATH"
+
+command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
 
