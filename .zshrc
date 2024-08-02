@@ -1075,11 +1075,9 @@ export PATH=$HOME/.pyenv/shims:$PATH
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
 
 # bun completions
-[ -s "/Users/chris/.bun/_bun" ] && source "/Users/chris/.bun/_bun"
-
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
+# Not really using bun rn: [ -s "/Users/chris/.bun/_bun" ] && source "/Users/chris/.bun/_bun"
+# export BUN_INSTALL="$HOME/.bun"
+# export PATH="$BUN_INSTALL/bin:$PATH"
 
 command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
