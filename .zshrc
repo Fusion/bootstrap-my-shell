@@ -166,9 +166,9 @@ EOB
 CHEF:
 -----
 Ruby:
-    export PATH=\$PATH:/opt/chef-workstation/embedded/bin
-    export GEM_HOME=/opt/chef-workstation/embedded/lib/ruby/gems
-    export GEM_PATH=/opt/chef-workstation/embedded/lib/ruby/gems
+    export PATH=/opt/cinc-workstation/embedded/bin:\$PATH
+    export GEM_HOME=/opt/cinc-workstation/embedded/lib/ruby/gems
+    export GEM_PATH=/opt/cinc-workstation/embedded/lib/ruby/gems
 
 EOB
         ;;
@@ -267,6 +267,7 @@ EOB
 }
 
 refresh_commands() {
+    # do not include nushell: too old
     cat <<-EOB > ~/.env.nix
 with import <nixpkgs> {}; [
     bat # deluxe cat
@@ -274,12 +275,10 @@ with import <nixpkgs> {}; [
     fasd # super cd
     fzf # fast fuzzy finder
     ripgrep # fast grep
-    exa # improved ls
+    lsd # improved ls
     navi # cheatsheet for many shell command needs
-    tldr # man
     viddy # watch on steroids
     jq # JSON
-    up # edit from stdin, e.g. lshw |& ./up
     ncdu # interactive du
     nq # nohup improved
     rlwrap # wrap commands in readline
@@ -297,8 +296,6 @@ with import <nixpkgs> {}; [
     pdsh # multi ssh
     zellij # multi window terminal
     xplr # file explorer
-    nushell
-    lazygit
     gping # multi ping with jitter
     broot # tree explorer
     hyperfine # benchmark commands
@@ -487,11 +484,6 @@ require("lazy").setup({
         end,
     },
     { "junegunn/vim-easy-align" },
-    { "kevinhwang91/rnvimr" },
-    {
-        "nvim-treesitter/nvim-treesitter",
-        build = ":TSUpdate"
-    },
     {
         "ldelossa/nvim-ide",
     },
@@ -545,6 +537,10 @@ require("lazy").setup({
         end,
     },
     {
+        "nvim-treesitter/nvim-treesitter",
+        build = ":TSUpdate",
+    },
+    {
         "ray-x/navigator.lua",
         config = function()
             require 'navigator'.setup({
@@ -552,31 +548,6 @@ require("lazy").setup({
             })
         end,
     },
-    { "L3MON4D3/LuaSnip" },
-    {
-        "mfussenegger/nvim-dap",
-        config = function()
-            local dap = require('dap')
-            dap.configurations.python = {
-                {
-                    type = 'python',
-                    request = 'launch',
-                    name = "Launch Python file",
-                    program = "",
-                    pythonPath = function()
-                        return 'python3'
-                    end,
-                },
-            }
-        end,
-    },
-    {
-        "rcarriga/nvim-dap-ui",
-        config = function()
-            require('dapui').setup()
-        end,
-    },
-    { "mfussenegger/nvim-dap-python" },
     {
         "ibhagwan/fzf-lua",
         branch = "main",
@@ -659,7 +630,6 @@ vim.opt.expandtab = true
 vim.opt.smarttab = true
 vim.opt.autoindent = true
 vim.opt.copyindent = true
-vim.opt.pastetoggle = "<F2>"
 vim.opt.list = true
 vim.opt.listchars = "tab:>.,trail:.,extends:#,nbsp:."
 
@@ -854,15 +824,8 @@ EOB
 
 # ls
 
-$I_WANT_COMMANDS && {
-    [[ -f $HOME/.local/bin/exa-wrapper.sh ]] || {
-        sudo curl -o $HOME/.local/bin/exa-wrapper.sh \
-        https://gist.githubusercontent.com/eggbean/74db77c4f6404dd1f975bd6f048b86f8/raw/157d868736f939fdf9c9d235f6f25478d9dbdc02/exa-wrapper.sh \
-        && sudo chmod +x $HOME/.local/bin/exa-wrapper.sh
-    }
-}
-[[ -f $HOME/.local/bin/exa-wrapper.sh ]] && {
-    alias ls="exa-wrapper.sh"
+[[ $(command -v lsd) ]] && {
+    alias ls=lsd
 }
 
 # asdf versions manager for many packages and languages
@@ -906,12 +869,17 @@ $I_WANT_COMMANDS && {
 
 [[ $(command -v nvim) ]] && {
     export EDITOR="nvim"
-    [[ -f $HOME/.local/bin/nvim ]] && {
-        alias vi=~/.local/bin/nvim
-        alias vim=~/.local/bin/nvim
+    [[ -f $HOME/.linuxbrew/bin/nvim ]] && {
+        alias vi=~/.linuxbrew/bin/nvim
+        alias vim=~/.linuxbrew/bin/nvim
     } || {
-        alias vi=~/.nix-profile/bin/nvim
-        alias vim=~/.nix-profile/bin/nvim
+        [[ -f $HOME/.local/bin/nvim ]] && {
+            alias vi=~/.local/bin/nvim
+            alias vim=~/.local/bin/nvim
+        } || {
+            alias vi=~/.nix-profile/bin/nvim
+            alias vim=~/.nix-profile/bin/nvim
+        }
     }
     alias vimdiff="nvim -d"
 }
@@ -1069,9 +1037,6 @@ dotfilesclone () {
     && echo "To view tracked files: 'dotfiles ls-files'"
 }
 
-# fix brew and python being annoying... use pyenv
-export PATH=$HOME/.pyenv/shims:$PATH
-
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
 
 # bun completions
@@ -1084,3 +1049,6 @@ command -v thefuck &>/dev/null && {
 }
 
 . "$HOME/.cargo/env"
+
+test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
+
