@@ -225,6 +225,28 @@ Examples:
 
 EOB
         ;;
+    fish)
+    cat << EOB
+
+fish:
+--------
+Set a variable:
+    set -gx variable value # g:global x:export
+    set -e variable # deletes
+    set variable value1 value2 # array
+    echo \$variable[2..3]
+Manipulations:
+    string replace bar baz barbarian
+    echo bababa | string match -r 'aba\$'
+Math:
+    math --base=hex bitxor 0x0F, 0xFF
+    math -s0 10.0 / 6.0
+No heredocs!
+Use 'test' to check for file existence, etc
+Use '\$status' for \$?
+
+EOB
+        ;;
     *)
     cat << EOB
 
@@ -244,6 +266,7 @@ help kitty: kitty commands and shortcuts
 help git: git tips and tricks
 help rg: ripgrep help
 help fzf: fzf help
+help fish: fish help
 
 EOB
         ;;
@@ -907,9 +930,6 @@ export NVM_DIR="$HOME/.nvm"
 # haskell
 [ -f "/Users/chris/.ghcup/env" ] && source "/Users/chris/.ghcup/env" # ghcup-env
 
-# hello tailscale
-alias tailscale=/Applications/Tailscale.app/Contents/MacOS/Tailscale
-
 # meld
 alias meld="open -W -a Meld $@"
 
@@ -1034,7 +1054,7 @@ command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
 
-. "$HOME/.cargo/env"
+[[ -f "$HOME/.cargo/env" ]] && { . "$HOME/.cargo/env" }
 
 test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
 
