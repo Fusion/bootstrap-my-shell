@@ -1,0 +1,41 @@
+[user]
+	name = Chris F Ravenscroft
+	email = chris@voilaweb.com
+[init]
+	defaultBranch = main
+[core]
+    compression = 0
+[diff]
+	tool = vscode
+	external = difft
+[difftool]
+	prompt = false
+[difftool "smerge"]
+	cmd = smerge \"$BASE\" \"$LOCAL\" \"$REMOTE\"
+[difftool  "difftastic"]
+	cmd = difft "$LOCAL" "$REMOTE"
+[difftool "vscode"]
+	cmd = code --wait --diff "$LOCAL" "$REMOTE"
+[merge]
+ 	tool = vscode
+[mergetool  "vscode"]
+	cmd = code --wait --merge "$LOCAL" "$REMOTE" "$BASE" "$MERGED"
+[mergetool "smerge"]
+	cmd = smerge mergetool \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
+	trustExitCode = true
+[mergetool]
+	keepBackup = false
+[mergetool  "deltawalker"]
+	cmd = '/Applications/DeltaWalker.app/Contents/Eclipse/Contents/Resources/git-merge' "$LOCAL" "$REMOTE" "$BASE" "$MERGED"
+[color]
+    ui = true
+[pull]
+	rebase = true
+[includeIf "gitdir:~/.local/git/"]
+	path = ~/.local/git/gitconfig
+[rerere]
+	enabled = true
+[global]
+[credential]
+    helper = cache --timeout=604800
+[alias]
