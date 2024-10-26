@@ -283,11 +283,12 @@ nix_platform=""
 EOB
 }
 nix_shell=""
-[[ "$SHELL" =~ zsh ]] && {
-    read -r -d '' nix_shell <<'EOB'
-    zplug # zsh plugins
-EOB
-}
+# See comments below about slowness of plugins
+#[[ "$SHELL" =~ zsh ]] && {
+#    read -r -d '' nix_shell <<'EOB'
+#    zplug # zsh plugins
+#EOB
+#}
 
 refresh_commands() {
     # do not include nushell: too old
