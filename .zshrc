@@ -302,8 +302,6 @@ with import <nixpkgs> {}; [
     direnv # run .envrc in current directory
     git
     tig # yeah gitui and tig suit a different need
-    clac # rpm calculator
-    jc # output to json
     smug # tmuxinator-like
     pdsh # multi ssh
     broot # tree explorer
