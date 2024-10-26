@@ -270,33 +270,19 @@ refresh_commands() {
     # do not include nushell: too old
     cat <<-EOB > ~/.env.nix
 with import <nixpkgs> {}; [
-    bat # deluxe cat
-    fd # faster than find
     fasd # super cd
     fzf # fast fuzzy finder
-    ripgrep # fast grep
-    lsd # improved ls
-    navi # cheatsheet for many shell command needs
-    viddy # watch on steroids
-    jq # JSON
     ncdu # interactive du
     nq # nohup improved
     rlwrap # wrap commands in readline
-    grex # regex commonality builder
     neovim # super vim
     direnv # run .envrc in current directory
     git
-    gitui
     tig # yeah gitui and tig suit a different need
     clac # rpm calculator
     jc # output to json
     smug # tmuxinator-like
-    diff-so-fancy
-    difftastic
     pdsh # multi ssh
-    zellij # multi window terminal
-    xplr # file explorer
-    gping # multi ping with jitter
     broot # tree explorer
     hyperfine # benchmark commands
     ${nix_platform}
