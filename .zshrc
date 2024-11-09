@@ -1,3 +1,4 @@
+# v1.0.1
 # If not running interactively, don't do anything
 
 case $- in
