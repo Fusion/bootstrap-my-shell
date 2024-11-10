@@ -138,6 +138,8 @@ lcd: change directory in vim
 :g/^\s*$/d: g to all 0+space blank lines and delete
 :put =eval(join(getline(1, '$'), '+')): insert eval of join all lines with '+' operator.
 :!open %: execute open of current file
+:norm keys: apply to current selection as if visual
+:LspInstall <name>: install language server
 NoIDE: remove IDE / DBUI: sql editor / Sql: NoIDE+DBUI / Dag: NoIDE+dag.toggle
 
 EOB
@@ -280,7 +282,6 @@ nix_platform=""
 [[ "$OS" != "OSX" ]] && {
     read -r -d '' nix_platform <<'EOB'
     dstat # better vmstat
-    usql # universal sql client
 EOB
 }
 nix_shell=""
