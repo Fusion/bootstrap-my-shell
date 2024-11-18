@@ -224,6 +224,7 @@ fzf:
 --------
 Examples:
     kill **<TAB>
+    ssh **<TAB>
     ls <CTRL>t
 
 EOB
@@ -981,6 +982,48 @@ refresh_all() {
     refresh_prompt
     refresh_vim
     refresh_smug
+}
+
+# update terminal tab: values from https://www.canva.com/colors/color-meanings/
+export PRELINE="\r\033[A"
+color() {
+    case $1 in
+    green)
+    echo -e "\033]6;1;bg;red;brightness;127\a"$PRELINE
+    echo -e "\033]6;1;bg;green;brightness;255\a"$PRELINE
+    echo -e "\033]6;1;bg;blue;brightness;212\a"$PRELINE
+    ;;
+    red)
+    echo -e "\033]6;1;bg;red;brightness;255\a"$PRELINE
+    echo -e "\033]6;1;bg;green;brightness;83\a"$PRELINE
+    echo -e "\033]6;1;bg;blue;brightness;73\a"$PRELINE
+    ;;
+    blue)
+    echo -e "\033]6;1;bg;red;brightness;13\a"$PRELINE
+    echo -e "\033]6;1;bg;green;brightness;152\a"$PRELINE
+    echo -e "\033]6;1;bg;blue;brightness;186\a"$PRELINE
+    ;;
+    khaki)
+    echo -e "\033]6;1;bg;red;brightness;240\a"$PRELINE
+    echo -e "\033]6;1;bg;green;brightness;230\a"$PRELINE
+    echo -e "\033]6;1;bg;blue;brightness;140\a"$PRELINE
+    ;;
+    gray)
+    echo -e "\033]6;1;bg;red;brightness;128\a"$PRELINE
+    echo -e "\033]6;1;bg;green;brightness;128\a"$PRELINE
+    echo -e "\033]6;1;bg;blue;brightness;128\a"$PRELINE
+    ;;
+    white)
+    echo -e "\033]6;1;bg;red;brightness;255\a"$PRELINE
+    echo -e "\033]6;1;bg;green;brightness;255\a"$PRELINE
+    echo -e "\033]6;1;bg;blue;brightness;240\a"$PRELINE
+    ;;
+    *)
+    echo "Colors: green, red, blue, khaki, gray, white"
+    esac
+}
+function title {
+    echo -ne "\033]0;"$*"\007"
 }
 
 # more git
