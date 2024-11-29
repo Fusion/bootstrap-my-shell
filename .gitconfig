@@ -6,29 +6,15 @@
 [core]
     compression = 0
 [diff]
-	tool = vscode
 	external = difft
 [difftool]
 	prompt = false
-[difftool "smerge"]
-	cmd = smerge \"$BASE\" \"$LOCAL\" \"$REMOTE\"
 [difftool  "difftastic"]
 	cmd = difft "$LOCAL" "$REMOTE"
-[difftool "vscode"]
-	cmd = code --wait --diff "$LOCAL" "$REMOTE"
-[merge]
- 	tool = vscode
-[mergetool  "vscode"]
-	cmd = code --wait --merge "$LOCAL" "$REMOTE" "$BASE" "$MERGED"
-[mergetool "smerge"]
-	cmd = smerge mergetool \"$BASE\" \"$LOCAL\" \"$REMOTE\" -o \"$MERGED\"
-	trustExitCode = true
 [mergetool]
 	keepBackup = false
-[mergetool  "deltawalker"]
-	cmd = '/Applications/DeltaWalker.app/Contents/Eclipse/Contents/Resources/git-merge' "$LOCAL" "$REMOTE" "$BASE" "$MERGED"
 [color]
-    ui = true
+	ui = true
 [pull]
 	rebase = true
 [includeIf "gitdir:~/.local/git/"]
@@ -39,3 +25,38 @@
 [credential]
     helper = cache --timeout=604800
 [alias]
+    aliases = config --get-regexp '^alias\\.'
+    addp = add -p
+    wt = worktree
+    co = checkout
+    br = branch
+    ci = commi
+    st = status
+    lg = log --color --graph --pretty=color --abbrev-commit
+    lga = log --all --color --graph --pretty=color --abbrev-commit
+    lgu = log --color --graph --pretty=color --abbrev-commit HEAD --not @{u}^@
+    fuck = reset HEAD --hard
+    undo = reset --hard @{1}
+    allbranches = "!f() { \
+        comparison_branch=$( \
+            for branch in origin/development development origin/main main origin/master master; do \
+                if git show-ref --verify --quiet refs/remotes/$branch || git show-ref --verify --quiet refs/heads/$branch; then \
+                    echo $branch; \
+                    break; \
+                fi; \
+            done \
+        ); \
+        if [ -z \"$comparison_branch\" ]; then \
+            echo \"No reference branch found from the specified list.\" >&2; \
+            return 1; \
+        fi; \
+        echo \"  Branch                                   | Last Commit                               | Ahead / behind '$comparison_branch'\"; \
+        echo \"  ---------------------------------------- | ----------------------------------------- | ---------------------------------\"; \
+        git for-each-ref --sort=-committerdate --format=\"%(if)%(HEAD)%(then)* %(else)  %(end)%(if:equals=refs/remotes)%(refname:rstrip=-2)%(then)%(color:dim)%(end)%(align:40)%(refname:short)%(end)%(if:equals=refs/remotes)%(refname:rstrip=-2)%(then)%(color:reset)%(end) | %(align:21)%(committerdate:short) (%(objectname:short))%(end) %(align:20)%(authorname)%(end)| %(ahead-behind:$comparison_branch)\" refs/heads refs/remotes; \
+        }; f"
+    ls = ls-files
+    find-ancestor = merge-base --fork-point HEAD origin/master
+    merge-move-head = merge --ff-only
+[pretty]
+    color = tformat:%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset
+

@@ -200,6 +200,11 @@ Enforce git key:
     export GIT_SSH_COMMAND='ssh -o IdentitiesOnly=yes -i ~/.ssh/<key>'
 Use ad-hoc difftool (e.g. difftastic):
     export GIT_EXTERNAL_DIFF=difft
+Amazing tools:
+    https://github.com/jnsahaj/lumen
+Help:
+    https://ohshitgit.com
+    git aliases
 
 EOB
         ;;
@@ -1094,11 +1099,10 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 # export BUN_INSTALL="$HOME/.bun"
 # export PATH="$BUN_INSTALL/bin:$PATH"
 
+[[ -e $HOME/.local/zshrc ]] && . $HOME/.local/zshrc
+[[ -f "$HOME/.cargo/env" ]] && { . "$HOME/.cargo/env" }
+[[ -e $HOME/.iterm2_shell_integration.zsh ]] && . $HOME/.iterm2_shell_integration.zsh
+
 command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
-
-[[ -f "$HOME/.cargo/env" ]] && { . "$HOME/.cargo/env" }
-
-test -e "${HOME}/.iterm2_shell_integration.zsh" && source "${HOME}/.iterm2_shell_integration.zsh"
-
