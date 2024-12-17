@@ -991,9 +991,9 @@ refresh_all() {
 }
 
 install_et() {
-    echo "deb [signed-by=/etc/apt/keyrings/et.gpg] https://mistertea.github.io/debian-et/debian-source/ $(grep VERSION_CODENAME /etc/os-release | cut -d= -f2) main" | sudo tee -a /etc/apt/sources.list.d/et.list
-    curl -sSL https://github.com/MisterTea/debian-et/raw/master/et.gpg | sudo tee /etc/apt/keyrings/et.gpg >/dev/null
-    sudo apt update && sudo apt install et
+    sudo apt-get install -y software-properties-common && \
+    sudo add-apt-repository ppa:jgmath2000/et && \
+    sudo apt-get update && sudo apt-get install -y et
 }
 
 # update terminal tab: values from https://www.canva.com/colors/color-meanings/
