@@ -266,6 +266,7 @@ dotfiles: manage dotfiles git repo
 smug: manage tmux layouts
 icd: interactive cd using xplr
 refresh_*: re-sync environment
+install_*: install important bits
 fetch_command <gitorg/gitpkg> <binaryname>: retrieve commands from git
 
 help vim: vim help
@@ -989,6 +990,12 @@ refresh_all() {
     refresh_smug
 }
 
+install_et() {
+    echo "deb [signed-by=/etc/apt/keyrings/et.gpg] https://mistertea.github.io/debian-et/debian-source/ $(grep VERSION_CODENAME /etc/os-release | cut -d= -f2) main" | sudo tee -a /etc/apt/sources.list.d/et.list
+    curl -sSL https://github.com/MisterTea/debian-et/raw/master/et.gpg | sudo tee /etc/apt/keyrings/et.gpg >/dev/null
+    sudo apt update && sudo apt install et
+}
+
 # update terminal tab: values from https://www.canva.com/colors/color-meanings/
 export PRELINE="\r\033[A"
 color() {
@@ -1106,3 +1113,5 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
+
+[ ! -f "$HOME/.x-cmd.root/X" ] || . "$HOME/.x-cmd.root/X" # boot up x-cmd.
