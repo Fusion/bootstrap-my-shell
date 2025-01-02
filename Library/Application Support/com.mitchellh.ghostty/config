@@ -1,0 +1,23 @@
+font-size = 12
+font-thicken
+window-padding-x = 5
+term = xterm-256color
+theme =tokyonight
+cursor-style = block
+cursor-click-to-move = true
+quick-terminal-position = bottom
+quick-terminal-screen = mouse
+quick-terminal-autohide = false
+shell-integration = zsh
+macos-option-as-alt = true
+macos-auto-secure-input = true
+macos-secure-input-indication = true
+desktop-notifications = true
+window-decoration = true
+custom-shader = gradient1.glsl
+background-opacity = 0.8
+background-blur-radius = 20
+macos-icon = custom-style
+macos-icon-ghost-color = purple
+macos-icon-screen-color = purple
+keybind = global:ctrl+shift+space=toggle_quick_terminal
