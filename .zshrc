@@ -234,6 +234,16 @@ Examples:
 
 EOB
         ;;
+    zoxide)
+    cat << EOB
+
+zoxide:
+--------
+Completion/dis-ambiguation:
+    z path<SPACE><TAB>
+
+EOB
+        ;;
     fish)
     cat << EOB
 
@@ -276,6 +286,7 @@ help kitty: kitty commands and shortcuts
 help git: git tips and tricks
 help rg: ripgrep help
 help fzf: fzf help
+help zoxide: zoxide help
 help fish: fish help
 
 EOB
@@ -303,8 +314,8 @@ refresh_commands() {
     # do not include nushell: too old
     cat <<-EOB > ~/.env.nix
 with import <nixpkgs> {}; [
-    fasd # super cd
     fzf # fast fuzzy finder
+    zoxide # quick directory jump
     ncdu # interactive du
     nq # nohup improved
     rlwrap # wrap commands in readline
@@ -923,6 +934,12 @@ if [[ $? -eq 0 ]]; then
         source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
     }
 fi
+
+# zoxide
+[[ $(command -v zoxide) ]] && {
+    eval "$(zoxide init zsh)"
+}
+
 
 # Languages, maybe
 
