@@ -244,6 +244,25 @@ Completion/dis-ambiguation:
 
 EOB
         ;;
+    aichat)
+    cat << EOB
+
+aichat:
+--------
+# alias
+    a
+# execute a command
+    aichat -e list c files
+# write code
+    aichat -c echo server in node.js
+# summarize a file or complete directory
+    aichat -f dir/ summarize
+    aichat -f myfile.md explain
+# config
+    aichat --info
+
+EOB
+        ;;
     fish)
     cat << EOB
 
@@ -287,6 +306,7 @@ help git: git tips and tricks
 help rg: ripgrep help
 help fzf: fzf help
 help zoxide: zoxide help
+help aichat: aichat help
 help fish: fish help
 
 EOB
@@ -347,6 +367,14 @@ EOB
         for pkg in $(awk 'NR>1 {print $1}' ~/.env.nix | grep -v ']'); do
             brew install $pkg
         done
+    }
+
+    [[ $(command -v mise) ]] || {
+        curl https://mise.run | sh
+        eval "$(mise activate zsh)"
+        mise use -g usage
+        mkdir -p $HOME/.local/zsh/completions
+        mise completion zsh > $HOME/.local/zsh/completions/_mise
     }
 }
 
@@ -774,6 +802,8 @@ bindkey '^w' backward-kill-word
 
 # missing shell completions
 
+fpath=($HOME/.local/zsh/completions $fpath)
+
 refresh_completions() {
     dst=$(printf "%s\n" "${fpath[@]}" | grep misc)
     [[ "$dst" == "" ]] && {
@@ -860,6 +890,10 @@ EOB
 [ -d $HOME/.asdf ] && {
     . $HOME/.asdf/asdf.sh
     fpath=(${ASDF_DIR}/completions $fpath)
+}
+
+[[ $(command -v mise) ]] && {
+    eval "$(mise activate zsh)"
 }
 
 # kitty integration
@@ -1115,6 +1149,14 @@ dotfilesclone () {
     && dotfiles pull origin main \
     && echo "To view tracked files: 'dotfiles ls-files'"
 }
+
+# aichat
+
+[[ $(command -v aichat) ]] && {
+    alias a=aichat
+}
+
+
 
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
 
