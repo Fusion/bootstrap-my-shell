@@ -1,0 +1,2 @@
+sops --encrypt --age age1zhxrt0yqdjqm3rtwuu850gyrw9yf7q2e0rw4tjzhjfxmxxqm0ecs3jej7q --in-place $HOME/.config/aichat/config.yaml \
+&& git add $HOME/.config/aichat/config.yaml

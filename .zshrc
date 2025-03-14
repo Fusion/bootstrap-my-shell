@@ -1173,4 +1173,12 @@ command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
 
+# Secrets
+
+[ -f "$HOME/.local/secrets/zshrc" ] && . "$HOME/.local/secrets/zshrc"
+
+
 [ ! -f "$HOME/.x-cmd.root/X" ] || . "$HOME/.x-cmd.root/X" # boot up x-cmd.
+
+# Added by Windsurf
+export PATH="/Users/chris/.codeium/windsurf/bin:$PATH"
