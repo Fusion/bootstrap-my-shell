@@ -1164,7 +1164,10 @@ dotfilesclone () {
 # Short commands
 
 [[ $(command -v aichat) ]] && {
-    alias a=aichat
+    a() {
+         [[ "$(head -1 $HOME/.config/aichat/config.yaml | grep AES256)" == "" ]] || { sops -d -i $HOME/.config/aichat/config.yaml }
+        aichat $@
+    }
 }
 
 m() {
