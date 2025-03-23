@@ -120,6 +120,16 @@ esac
 
 help() {
     case "$1" in
+        short)
+    cat << EOB
+
+Short commands:
+---------------
+a: aichat <args>
+m: mysql <host> [db]
+
+EOB
+        ;;
         vim|nvim)
     cat << EOB
 
@@ -298,6 +308,7 @@ refresh_*: re-sync environment
 install_*: install important bits
 fetch_command <gitorg/gitpkg> <binaryname>: retrieve commands from git
 
+help short: short commands help
 help vim: vim help
 help dap: nvim debugger help
 help chef: various chef configuration info
@@ -1150,10 +1161,14 @@ dotfilesclone () {
     && echo "To view tracked files: 'dotfiles ls-files'"
 }
 
-# aichat
+# Short commands
 
 [[ $(command -v aichat) ]] && {
     alias a=aichat
+}
+
+m() {
+    mysql -h$1 -uroot -p$(cat ~/.secrets/dbpwd) $2 -A
 }
 
 
