@@ -208,6 +208,7 @@ GIT:
 ----
 Enforce git key:
     export GIT_SSH_COMMAND='ssh -o IdentitiesOnly=yes -i ~/.ssh/<key>'
+    export GIT_SSH_COMMAND='ssh -o IdentitiesOnly=yes -i /root/github_rsa'
 Use ad-hoc difftool (e.g. difftastic):
     export GIT_EXTERNAL_DIFF=difft
 Amazing tools:
@@ -273,6 +274,23 @@ aichat:
 
 EOB
         ;;
+    fabric)
+    cat << EOB
+
+fabric:
+--------
+# list patterns
+    ls $HOME/.config/fabric/patterns
+# stdin examples
+    pbpaste | fabric -p summarize
+# youtube examples
+    fabric -y <youtube url> -s -p summarize
+    fabric -y <youtube url> -s -p analyze_claims
+# website examples
+    fabric -u <url> -p summarize
+
+EOB
+        ;;
     fish)
     cat << EOB
 
@@ -318,6 +336,7 @@ help rg: ripgrep help
 help fzf: fzf help
 help zoxide: zoxide help
 help aichat: aichat help
+help fabric: fabric-ai help
 help fish: fish help
 
 EOB
@@ -1174,6 +1193,23 @@ m() {
     mysql -h$1 -uroot -p$(cat ~/.secrets/dbpwd) $2 -A
 }
 
+[[ -e $HOME/.config/fabric/patterns ]] && {
+    yt() {
+        if [ "$#" -eq 0 ] || [ "$#" -gt 2 ]; then
+            echo "Usage: yt [-t | --timestamps] youtube-link"
+            echo "Use the '-t' flag to get the transcript with timestamps."
+            return 1
+        fi
+
+        transcript_flag="--transcript"
+        if [ "$1" = "-t" ] || [ "$1" = "--timestamps" ]; then
+            transcript_flag="--transcript-with-timestamps"
+            shift
+        fi
+        local video_link="$1"
+        fabric -y "$video_link" $transcript_flag
+    }
+}
 
 
 if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
@@ -1195,8 +1231,17 @@ command -v thefuck &>/dev/null && {
 
 [ -f "$HOME/.local/secrets/zshrc" ] && . "$HOME/.local/secrets/zshrc"
 
+# bun
+export BUN_INSTALL="$HOME/.bun"
+export PATH="$BUN_INSTALL/bin:$PATH"
 
-[ ! -f "$HOME/.x-cmd.root/X" ] || . "$HOME/.x-cmd.root/X" # boot up x-cmd.
+PATH=~/.console-ninja/.bin:$PATH
 
-# Added by Windsurf
-export PATH="/Users/chris/.codeium/windsurf/bin:$PATH"
+
+# BEGIN opam configuration
+# This is useful if you're using opam as it adds:
+#   - the correct directories to the PATH
+#   - auto-completion for the opam binary
+# This section can be safely removed at any time if needed.
+[[ ! -r '/Users/chris/.opam/opam-init/init.zsh' ]] || source '/Users/chris/.opam/opam-init/init.zsh' > /dev/null 2> /dev/null
+# END opam configuration
