@@ -442,6 +442,16 @@ $I_WANT_COMMANDS && {
 
 [[ "$SHELL" =~ zsh ]] && { autoload -Uz compinit && compinit; }
 
+# Auto-source .source-me
+
+_my_chpwd_running=false
+autoload -U add-zsh-hook
+load-local-conf() {
+if $_my_chpwd_running; then return 0; fi; _my_chpwd_running=true;
+if [[ -f .source-me ]]; then echo "ex'ing .source-me"; source .source-me; fi; _my_chpwd_running=false;
+}
+add-zsh-hook chpwd load-local-conf
+
 # Preserve history
 
 setopt SHARE_HISTORY HIST_IGNORE_DUPS
@@ -489,7 +499,7 @@ $I_WANT_PROMPT && {
 }
 
 [[ -d ~/.poshthemes ]] && {
-    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/montys.omp.json)"
+    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/multiverse-neon.omp.json)"
 }
 
 # direnv sources a directory .envrc file
