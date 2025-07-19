@@ -313,6 +313,14 @@ Use '\$status' for \$?
 
 EOB
         ;;
+    tools)
+    cat << EOB
+
+aliases:
+--------
+EOB
+alias | grep '^x\-'
+        ;;
     *)
     cat << EOB
 
@@ -338,6 +346,7 @@ help zoxide: zoxide help
 help aichat: aichat help
 help fabric: fabric-ai help
 help fish: fish help
+help tools: x-aliases, etc
 
 EOB
         ;;
@@ -1193,7 +1202,7 @@ dotfilesclone () {
 # Short commands
 
 [[ $(command -v aichat) ]] && {
-    a() {
+    ai() {
          [[ "$(head -1 $HOME/.config/aichat/config.yaml | grep AES256)" == "" ]] || { sops -d -i $HOME/.config/aichat/config.yaml }
         aichat $@
     }
@@ -1236,6 +1245,11 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
+
+# Tools
+alias x-marimo='uvx marimo'
+alias x-gemini-cli='npx https://github.com/google-gemini/gemini-cli'
+alias x-mcp-inspector='npx @mcpjam/inspector@latest'
 
 # Secrets
 
