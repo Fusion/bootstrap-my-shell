@@ -125,8 +125,9 @@ help() {
 
 Short commands:
 ---------------
-a: aichat <args>
-m: mysql <host> [db]
+ai: aichat <args>
+g: gemini
+m:  mysql <host> [db]
 
 EOB
         ;;
@@ -291,6 +292,16 @@ fabric:
 
 EOB
         ;;
+    sops)
+    cat << EOB
+
+sops:
+-----
+Since sops is used to encrypt secrets,
+check content of \$HOME/.dotfiles/hooks/pre-commit
+
+EOB
+        ;;
     fish)
     cat << EOB
 
@@ -341,6 +352,7 @@ help chef: various chef configuration info
 help kitty: kitty commands and shortcuts
 help git: git tips and tricks
 help rg: ripgrep help
+help sops: sops encrypt help
 help fzf: fzf help
 help zoxide: zoxide help
 help aichat: aichat help
@@ -1239,16 +1251,19 @@ if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc
 # export PATH="$BUN_INSTALL/bin:$PATH"
 
 [[ -e $HOME/.local/zshrc ]] && . $HOME/.local/zshrc
+[[ -e $HOME/.secrets.env ]] && {
+    [[ "$(head -1 $HOME/.secrets.env | grep AES256)" == "" ]] || { sops -d -i $HOME/.secrets.env }
+    . $HOME/.secrets.env
+}
 [[ -f "$HOME/.cargo/env" ]] && { . "$HOME/.cargo/env" }
-[[ -e $HOME/.iterm2_shell_integration.zsh ]] && . $HOME/.iterm2_shell_integration.zsh
 
 command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
 
 # Tools
+alias g=gemini
 alias x-marimo='uvx marimo'
-alias x-gemini-cli='npx https://github.com/google-gemini/gemini-cli'
 alias x-mcp-inspector='npx @mcpjam/inspector@latest'
 
 # Secrets
