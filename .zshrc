@@ -581,9 +581,15 @@ vim.opt.rtp:prepend(lazypath)
 
 require("lazy").setup({
     checker = { enabled = true, frequency = 86400 },
+    --[[
+    -- load packages for lsp, dap, etc
     { "williamboman/mason.nvim" },
+    ]]
+    -- status line
     { "itchyny/lightline.vim" },
+    -- file icons
     { "nvim-tree/nvim-web-devicons" },
+    -- theme
     {
         "scottmckendry/cyberdream.nvim",
         lazy = false,
@@ -600,20 +606,31 @@ require("lazy").setup({
             vim.cmd("colorscheme cyberdream") -- set the colorscheme
         end,
     },
+    -- align (:EasyAlign)
     { "junegunn/vim-easy-align" },
+    --[[
+    -- full-on IDE environment
     {
         "ldelossa/nvim-ide",
     },
+    ]]
+    -- set root directory to file being edited
     {
         "airblade/vim-rooter",
         config = function()
             vim.g.rooter_patterns = { '.git' }
         end,
     },
+    -- pop-up notifier
     { "rcarriga/nvim-notify" },
+    --[[
+    -- preview window for lsp
     { "dnlhc/glance.nvim" },
+    -- language server protocol definitions
     { "neovim/nvim-lspconfig" },
+    -- load above definitions
     { "williamboman/mason-lspconfig.nvim" },
+    -- completions engine
     {
         "hrsh7th/nvim-cmp",
         config = function()
@@ -629,7 +646,9 @@ require("lazy").setup({
             })
         end,
     },
+    -- lsp provider for completions engine
     { "hrsh7th/cmp-nvim-lsp" },
+    -- sane defaults for lsp; may be deprecated
     {
         "VonHeikemen/lsp-zero.nvim",
         branch = "v2.x",
@@ -642,6 +661,8 @@ require("lazy").setup({
             lsp.setup()
         end,
     },
+    ]]
+    -- gui components for lua
     {
         "ray-x/guihua.lua",
         build = "cd lua/fzy && make",
@@ -653,10 +674,13 @@ require("lazy").setup({
             })
         end,
     },
+    -- treesitter
     {
         "nvim-treesitter/nvim-treesitter",
         build = ":TSUpdate",
     },
+    --[[
+    -- lsp + treesitter UI
     {
         "ray-x/navigator.lua",
         config = function()
@@ -665,6 +689,7 @@ require("lazy").setup({
             })
         end,
     },
+    -- invoke fzf from lua
     {
         "ibhagwan/fzf-lua",
         branch = "main",
@@ -675,6 +700,7 @@ require("lazy").setup({
                 "<cmd>lua require('fzf-lua').buffers()<CR>", { silent = true })
         end,
     },
+    -- databases editor
     { "tpope/vim-dadbod" },
     {
         "kristijanhusak/vim-dadbod-ui",
@@ -682,25 +708,17 @@ require("lazy").setup({
             vim.g.db_ui_save_location = '~/Cells/db_ui'
         end,
     },
-    {
-        "kristijanhusak/vim-dadbod-completion",
-        config = function()
-            vim.api.nvim_exec(
-                [[
-                    autocmd FileType sql setlocal omnifunc=vim_dadbod_completion#omni
-                    autocmd FileType sql,mysql,plsql lua require('cmp').setup.buffer({ sources = {{ name = 'vim-dadbod-completion' }} })
-                ]],
-                false
-            )
-        end,
-    },
+    ]]
+    -- display current code context using lsp
     { "SmiteshP/nvim-navic" },
+    -- deprecated ui using navic
     {
         "utilyre/barbecue.nvim",
         config = function()
             require('barbecue').setup()
         end,
     },
+    -- nice startup screen
     {
         "mhinz/vim-startify",
         config = function()
@@ -717,7 +735,9 @@ require("lazy").setup({
 
         end,
     },
+    -- git diff and merge
     { "sindrets/diffview.nvim" },
+    -- memory enhancer
     {
         "folke/which-key.nvim",
         event = "VeryLazy",
