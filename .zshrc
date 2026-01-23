@@ -26,6 +26,18 @@ command -v dialog &>/dev/null || {
     popd &>/dev/null
 }
 
+# We like ansi effects too
+
+RED="\033[0;31m"
+GREEN="\033[0;32m"
+YELLOW="\033[1;33m"
+BLUE="\033[0;34m"
+MAGENTA="\033[0;35m"
+CYAN="\033[0;36m"
+RESET="\033[0m"
+BOLD="\033[1m"
+UNDERLINE="\033[4m"
+
 # Toggles
 
 I_WANT_COMMANDS=true
@@ -132,28 +144,38 @@ m:  mysql <host> [db]
 EOB
         ;;
         vim|nvim)
-    cat << EOB
+    printf '%b' "$(cat << EOB
 
 VIM commands:
 -------------
-<ctr>o: jump back to previous location
-K: display information
-gd: go to definition
-<ctrl>w s/<ctrl>w v: split
-<ctrl>p: fzf files
-set [no]list: display invisible characters
-set diffopt+=iwhite: ignore whitespace in diff
-rvi: remote vim edit
-lcd: change directory in vim
-<ctr>v <shit>I: start inserting block, until <esc>
-:g/^\s*$/d: g to all 0+space blank lines and delete
-:put =eval(join(getline(1, '$'), '+')): insert eval of join all lines with '+' operator.
-:!open %: execute open of current file
-:norm keys: apply to current selection as if visual
-:LspInstall <name>: install language server
-NoIDE: remove IDE / DBUI: sql editor / Sql: NoIDE+DBUI / Dag: NoIDE+dag.toggle
+navigate
+  ${GREEN}<ctr>o${RESET}: jump back to previous location
+  ${GREEN}K${RESET}: display information
+  ${GREEN}gd${RESET}: go to definition
+multi
+  ${GREEN}<ctrl>w s${RESET}/${GREEN}<ctrl>w v${RESET}: split
+  ${GREEN}<ctrl>p${RESET}: fzf files
+  ${YELLOW}:tabedit <filename>${RESET} or ${CYAN}vi -p file1 file2...${RESET} then ${GREEN}gt${RESET}/${GREEN}gT${RESET}
+  ${YELLOW}:mksession <sessionname>${RESET} to save, ${YELLOW}:mks!${RESET} to update.
+  ${YELLOW}:source <sessionname>${RESET} or ${CYAN}vi -S <sessionname>${RESET} to reopen.
+display
+  ${GREEN}mb${RESET} ... ${GREEN}zf'b${RESET} to ${UNDERLINE}fold section${RESET}, ${GREEN}zo${RESET} to open, ${GREEN}zc${RESET} to close
+  ${YELLOW}:set [no]list${RESET}: display invisible characters
+  ${YELLOW}:set diffopt+=iwhite${RESET}: ignore whitespace in diff
+reformat
+  ${GREEN}i={${RESET} to properly ${UNDERLINE}indent${RESET} current section
+misc
+  ${GREEN}<ctrl>n${RESET}: auto-complete
+  ${CYAN}rvi${RESET}: remote vim edit
+  ${YELLOW}:lcd${RESET}: change directory in vim
+  ${GREEN}<ctr>v <shit>I${RESET}: start inserting block, until <esc>
+  ${YELLOW}:g/^\s*$/d:${RESET} g to all 0+space blank lines and delete
+  ${YELLOW}:put =eval(join(getline(1, '$'), '+'))${RESET}: insert eval of join all lines with '+' operator.
+  ${YELLOW}:!open %${RESET}: execute open of current file
+  ${YELLOW}:norm keys${RESET}: apply to current selection as if visual
 
 EOB
+)"
         ;;
     dap|nvim-dap)
     cat << EOB
@@ -1244,6 +1266,15 @@ m() {
     mysql -h$1 -uroot -p$(cat ~/.secrets/dbpwd) $2 -A
 }
 
+ntfy() {
+    local msg="$*"
+    curl -s \
+        --form-string "token=$PUSHOVER_TOKEN" \
+        --form-string "user=$PUSHOVER_USER" \
+        --form-string "message=$msg" \
+        https://api.pushover.net/1/messages.json
+}
+
 [[ -e $HOME/.config/fabric/patterns ]] && {
     yt() {
         if [ "$#" -eq 0 ] || [ "$#" -gt 2 ]; then
@@ -1281,6 +1312,11 @@ command -v thefuck &>/dev/null && {
     eval $(thefuck --alias)
 }
 
+# aerospace
+ff() {
+    aerospace list-windows --all | fzf --bind 'enter:execute(bash -c "aerospace focus --window-id {1}")+abort'
+}
+
 # Tools
 alias g=gemini
 alias x-marimo='uvx marimo'
@@ -1304,3 +1340,6 @@ PATH=~/.console-ninja/.bin:$PATH
 # This section can be safely removed at any time if needed.
 [[ ! -r '/Users/chris/.opam/opam-init/init.zsh' ]] || source '/Users/chris/.opam/opam-init/init.zsh' > /dev/null 2> /dev/null
 # END opam configuration
+
+# Added by Antigravity
+export PATH="/Users/chris/.antigravity/antigravity/bin:$PATH"
