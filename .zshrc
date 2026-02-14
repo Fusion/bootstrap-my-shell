@@ -278,6 +278,15 @@ Completion/dis-ambiguation:
 
 EOB
         ;;
+    zellij)
+    cat << EOB
+
+zellij:
+--------
+    cd ~/.config/zellij && make quick3 <group>
+
+EOB
+        ;;
     aichat)
     cat << EOB
 
@@ -377,6 +386,7 @@ help rg: ripgrep help
 help sops: sops encrypt help
 help fzf: fzf help
 help zoxide: zoxide help
+help zellij: zellij layouts
 help aichat: aichat help
 help fabric: fabric-ai help
 help fish: fish help
@@ -1271,6 +1281,7 @@ ntfy() {
     curl -s \
         --form-string "token=$PUSHOVER_TOKEN" \
         --form-string "user=$PUSHOVER_USER" \
+        --form-string "priority=1" \
         --form-string "message=$msg" \
         https://api.pushover.net/1/messages.json
 }
