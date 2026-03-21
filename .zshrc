@@ -51,7 +51,7 @@ I_WANT_UPDATES=true
     st=$(dialog --clear \
         --backtitle "First setup" \
         --title "Missing CFR environment" \
-        --menu "Please select a setup option." 14 30 4  0 "No commands." 1 "NIX (sudo)" 2 "LinuxBrew (user)" 2>&1 >/dev/tty)
+        --menu "Please select a setup option." 14 30 4  0 "No commands." 1 "NIX (sudo)" 2 "Brew (system)" 3 "LinuxBrew (user)" 2>&1 >/dev/tty)
     reset
     touch ~/.env.cfr-setup
     case $st in
@@ -67,7 +67,10 @@ EOB
         I_WANT_NIX=true
     ;;
     2)
-        I_WANT_BREW=true
+        I_WANT_SYS_BREW=true
+    ;;
+    3)
+        I_WANT_USER_BREW=true
     ;;
     esac
     echo
@@ -85,18 +88,27 @@ EOB
     . ~/.env.cfr-setup
 }
 
-[[ -v I_WANT_BREW ]] && {
+[[ -v I_WANT_USER_BREW ]] && {
     [[ -d $HOME/.linuxbrew ]] || {
         mkdir $HOME/.linuxbrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C $HOME/.linuxbrew
         $HOME/.linuxbrew/bin/brew update
     }
-    echo I_HAVE_BREW=true >> ~/.env.cfr-setup
+    echo I_HAVE_USER_BREW=true >> ~/.env.cfr-setup
     . ~/.env.cfr-setup
 }
 
-[[ -v I_HAVE_BREW ]] && export PATH=$HOME/.linuxbrew/sbin:$HOME/.linuxbrew/bin:$PATH
+[[ -v I_WANT_SYS_BREW ]] && {
+    [[ -d /opt/homebrew ]] || {
+        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+    }
+    echo I_HAVE_SYS_BREW=true >> ~/.env.cfr-setup
+    . ~/.env.cfr-setup
+}
 
-$I_HAVE_NIX || $I_HAVE_BREW || I_WANT_COMMANDS=false
+[[ -v I_HAVE_USER_BREW ]] && export PATH=$HOME/.linuxbrew/sbin:$HOME/.linuxbrew/bin:$PATH
+[[ -v I_HAVE_SYS_BREW ]] && eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+
+$I_HAVE_NIX || $I_HAVE_USER_BREW || $I_HAVE_SYS_BREW || I_WANT_COMMANDS=false
 
 case "$(uname -s)" in
     Linux)
@@ -208,6 +220,21 @@ Ruby:
 
 EOB
         ;;
+    mise)
+    cat << EOB
+
+MISE:
+----
+Examples:
+    mise ls [--installed|--current]
+    mise registry
+    mise search <target>
+    mise use jq@latest
+    mise install jq@latest
+    mise upgrade --bump
+    mise upgrade node@20
+EOB
+        ;;
     kitty)
     cat << EOB
 
@@ -268,6 +295,21 @@ Examples:
 
 EOB
         ;;
+    tv)
+    cat << EOB
+
+television:
+--------
+Examples:
+    tv # show files and content
+    tv list-channels | tv
+    tv update-channels
+    cat <log file> | tv
+    ps | tv
+    <ctrl>t: switch channels
+
+EOB
+        ;;
     zoxide)
     cat << EOB
 
@@ -283,7 +325,11 @@ EOB
 
 zellij:
 --------
+Quick run:
     cd ~/.config/zellij && make quick3 <group>
+    zrf top
+<ctrl>g: disable/re-enable zellij mappings
+<ctrl>t+s: synchronize panes
 
 EOB
         ;;
@@ -379,12 +425,14 @@ fetch_command <gitorg/gitpkg> <binaryname>: retrieve commands from git
 help short: short commands help
 help vim: vim help
 help dap: nvim debugger help
+help mise: mise-en-place help
 help chef: various chef configuration info
 help kitty: kitty commands and shortcuts
 help git: git tips and tricks
 help rg: ripgrep help
 help sops: sops encrypt help
 help fzf: fzf help
+help tv: television help
 help zoxide: zoxide help
 help zellij: zellij layouts
 help aichat: aichat help
@@ -417,19 +465,14 @@ refresh_commands() {
     # do not include nushell: too old
     cat <<-EOB > ~/.env.nix
 with import <nixpkgs> {}; [
-    fzf # fast fuzzy finder
-    zoxide # quick directory jump
     ncdu # interactive du
     nq # nohup improved
     rlwrap # wrap commands in readline
-    neovim # super vim
-    direnv # run .envrc in current directory
     git
     tig # yeah gitui and tig suit a different need
     smug # tmuxinator-like
     pdsh # multi ssh
     broot # tree explorer
-    hyperfine # benchmark commands
     ${nix_platform}
     ${nix_shell}
 ]
@@ -446,7 +489,7 @@ EOB
         }
         /nix/var/nix/profiles/default/bin/nix-env -irf ~/.env.nix
     }
-    [[ -v I_HAVE_BREW ]] && {
+    [[ -v I_HAVE_USER_BREW || -v I_HAVE_SYS_BREW ]] && {
         for pkg in $(awk 'NR>1 {print $1}' ~/.env.nix | grep -v ']'); do
             brew install $pkg
         done
@@ -458,7 +501,17 @@ EOB
         mise use -g usage
         mkdir -p $HOME/.local/zsh/completions
         mise completion zsh > $HOME/.local/zsh/completions/_mise
+        eval "$(mise activate zsh)"
     }
+
+    mise use \
+        direnv \
+        fzf \
+        television \
+        hyperfine \
+        neovim \
+        usage \
+        zoxide
 }
 
 $I_WANT_COMMANDS && {
@@ -1048,12 +1101,12 @@ $I_WANT_COMMANDS && {
         alias vi=~/.linuxbrew/bin/nvim
         alias vim=~/.linuxbrew/bin/nvim
     } || {
-        [[ -f $HOME/.local/bin/nvim ]] && {
-            alias vi=~/.local/bin/nvim
-            alias vim=~/.local/bin/nvim
-        } || {
+        [[ -f $HOME/.nix-profile/bin/nvim ]] && {
             alias vi=~/.nix-profile/bin/nvim
             alias vim=~/.nix-profile/bin/nvim
+        } || {
+            alias vi=nvim
+            alias vim=nvim
         }
     }
     alias vimdiff="nvim -d"
@@ -1067,19 +1120,27 @@ export PAGER="bat"
 [[ "$TERM" == "rio" ]] && alias ssh="TERM=xterm-256color ssh"
 [[ -d ~/.krew ]] && export PATH="${PATH}:${HOME}/.krew/bin"
 
-# fzf keys
-p=$(which fzf)
+p=$(which tv)
 if [[ $? -eq 0 ]]; then
-    [[ -v I_HAVE_NIX ]] && {
-        sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
-        if [[ "$sp" != "" ]]; then
-            while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh && source $sp/bin/../share/fzf/completion.zsh
-        fi
-    }
-    [[ -v I_HAVE_BREW ]] && {
-        source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
-        source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
-    }
+    eval "$(tv init zsh)"
+else
+    p=$(which fzf)
+    if [[ $? -eq 0 ]]; then
+        [[ -v I_HAVE_NIX ]] && {
+            sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
+            if [[ "$sp" != "" ]]; then
+                while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh && source $sp/bin/../share/fzf/completion.zsh
+            fi
+        }
+        [[ -v I_HAVE_USER_BREW ]] && {
+            source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
+            source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
+        }
+        [[ -v I_HAVE_SYS_BREW ]] && {
+            source /opt/homebrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
+            source /opt/homebrew/var/homebrew/linked/fzf/shell/completion.zsh
+        }
+    fi
 fi
 
 # zoxide
@@ -1087,6 +1148,9 @@ fi
     eval "$(zoxide init zsh)"
 }
 
+# zellij
+
+function zrf () { zellij run --name "$*" --floating -- zsh -ic "$*";}
 
 # Languages, maybe
 
@@ -1337,13 +1401,6 @@ alias x-mcp-inspector='npx @mcpjam/inspector@latest'
 
 [ -f "$HOME/.local/secrets/zshrc" ] && . "$HOME/.local/secrets/zshrc"
 
-# bun
-export BUN_INSTALL="$HOME/.bun"
-export PATH="$BUN_INSTALL/bin:$PATH"
-
-PATH=~/.console-ninja/.bin:$PATH
-
-
 # BEGIN opam configuration
 # This is useful if you're using opam as it adds:
 #   - the correct directories to the PATH
@@ -1351,6 +1408,3 @@ PATH=~/.console-ninja/.bin:$PATH
 # This section can be safely removed at any time if needed.
 [[ ! -r '/Users/chris/.opam/opam-init/init.zsh' ]] || source '/Users/chris/.opam/opam-init/init.zsh' > /dev/null 2> /dev/null
 # END opam configuration
-
-# Added by Antigravity
-export PATH="/Users/chris/.antigravity/antigravity/bin:$PATH"
