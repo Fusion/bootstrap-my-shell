@@ -605,7 +605,8 @@ $I_WANT_PROMPT && {
 }
 
 [[ -d ~/.poshthemes ]] && {
-    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/multiverse-neon.omp.json)"
+    function zle-line-init() { }
+    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/catppuccin.omp.json)"
 }
 
 # direnv sources a directory .envrc file
@@ -1396,6 +1397,21 @@ ff() {
 alias g=gemini
 alias x-marimo='uvx marimo'
 alias x-mcp-inspector='npx @mcpjam/inspector@latest'
+
+ssh() {
+    local dn=$(scutil --dns | awk -F' : ' '/search domain/ && $2 ~ /\./ && $2 !~ /network$/ && $2 !~ /search$/ {print $2; exit}')
+    local args=("$@")
+    local last_index=$#
+    local target="${args[$last_index]}"
+    if [[ -n "$target" && "$target" != -* && "$target" != *@*.* && "$target" != *.* ]]; then
+        if [[ "$target" == *@* ]]; then
+            args[$last_index]="${target%%@*}@${target#*@}.$dn"
+        else
+            args[$last_index]="${target}.$dn"
+        fi
+    fi
+    command ssh "${args[@]}"
+}
 
 # Secrets
 
