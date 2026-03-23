@@ -606,7 +606,7 @@ $I_WANT_PROMPT && {
 
 [[ -d ~/.poshthemes ]] && {
     function zle-line-init() { }
-    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/catppuccin.omp.json)"
+    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/mojada.omp.json)"
 }
 
 # direnv sources a directory .envrc file
