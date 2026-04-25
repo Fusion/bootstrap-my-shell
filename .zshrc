@@ -257,7 +257,7 @@ EOB
 GIT:
 ----
 Enforce git key:
-    export GIT_SSH_COMMAND='ssh -o IdentitiesOnly=yes -i ~/.ssh/<key>'
+    export GIT_SSH_COMMAND='ssh -o IdentitiesOnly=yes -i ~/.ssh/root_github_rsa'
     export GIT_SSH_COMMAND='ssh -o IdentitiesOnly=yes -i /root/github_rsa'
 Use ad-hoc difftool (e.g. difftastic):
     export GIT_EXTERNAL_DIFF=difft
@@ -473,6 +473,9 @@ with import <nixpkgs> {}; [
     smug # tmuxinator-like
     pdsh # multi ssh
     broot # tree explorer
+    tealdeer # short examples
+    navi # complete syntax
+    pv # pipe progress
     ${nix_platform}
     ${nix_shell}
 ]
@@ -606,7 +609,8 @@ $I_WANT_PROMPT && {
 
 [[ -d ~/.poshthemes ]] && {
     function zle-line-init() { }
-    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/mojada.omp.json)"
+    [[ -f ~/.poshthemes/cfr.omp.json ]] || curl -so ~/.poshthemes/cfr.omp.json https://gist.githubusercontent.com/Fusion/97b8731cef5dd52bbe44ebd45505f2a5/raw/3a609404d8608e6c944376e91f88780025cc3f34/cfr.omp.json
+    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/cfr.omp.json)"
 }
 
 # direnv sources a directory .envrc file
@@ -1399,6 +1403,10 @@ alias x-marimo='uvx marimo'
 alias x-mcp-inspector='npx @mcpjam/inspector@latest'
 
 ssh() {
+    if ! command -v scutil >/dev/null 2>&1; then
+        command ssh "$@"
+        return
+    fi
     local dn=$(scutil --dns | awk -F' : ' '/search domain/ && $2 ~ /\./ && $2 !~ /network$/ && $2 !~ /search$/ {print $2; exit}')
     local args=("$@")
     local last_index=$#
@@ -1411,6 +1419,24 @@ ssh() {
         fi
     fi
     command ssh "${args[@]}"
+}
+et() {
+    if ! command -v scutil >/dev/null 2>&1; then
+        command et "$@"
+        return
+    fi
+    local dn=$(scutil --dns | awk -F' : ' '/search domain/ && $2 ~ /\./ && $2 !~ /network$/ && $2 !~ /search$/ {print $2; exit}')
+    local args=("$@")
+    local last_index=$#
+    local target="${args[$last_index]}"
+    if [[ -n "$target" && "$target" != -* && "$target" != *@*.* && "$target" != *.* ]]; then
+        if [[ "$target" == *@* ]]; then
+            args[$last_index]="${target%%@*}@${target#*@}.$dn"
+        else
+            args[$last_index]="${target}.$dn"
+        fi
+    fi
+    command et "${args[@]}"
 }
 
 # Secrets
