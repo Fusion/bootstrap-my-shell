@@ -941,57 +941,6 @@ dotfilesclone () {
     && echo "To view tracked files: 'dotfiles ls-files'"
 }
 
-# Short commands
-
-[[ $(command -v aichat) ]] && {
-    ai() {
-         [[ "$(head -1 $HOME/.config/aichat/config.yaml | grep AES256)" == "" ]] || { sops -d -i $HOME/.config/aichat/config.yaml }
-        aichat $@
-    }
-}
-
-m() {
-    mysql -h$1 -uroot -p$(cat ~/.secrets/dbpwd) $2 -A
-}
-
-ntfy() {
-    local msg="$*"
-    curl -s \
-        --form-string "token=$PUSHOVER_TOKEN" \
-        --form-string "user=$PUSHOVER_USER" \
-        --form-string "priority=1" \
-        --form-string "message=$msg" \
-        https://api.pushover.net/1/messages.json
-}
-
-[[ -e $HOME/.config/fabric/patterns ]] && {
-    yt() {
-        if [ "$#" -eq 0 ] || [ "$#" -gt 2 ]; then
-            echo "Usage: yt [-t | --timestamps] youtube-link"
-            echo "Use the '-t' flag to get the transcript with timestamps."
-            return 1
-        fi
-
-        transcript_flag="--transcript"
-        if [ "$1" = "-t" ] || [ "$1" = "--timestamps" ]; then
-            transcript_flag="--transcript-with-timestamps"
-            shift
-        fi
-        local video_link="$1"
-        fabric -y "$video_link" $transcript_flag
-    }
-}
-
-# aerospace
-ff() {
-    aerospace list-windows --all | fzf --bind 'enter:execute(bash -c "aerospace focus --window-id {1}")+abort'
-}
-
-# Tools
-alias g=gemini
-alias x-marimo='uvx marimo'
-alias x-mcp-inspector='npx @mcpjam/inspector@latest'
-
 ssh() {
     if ! command -v scutil >/dev/null 2>&1; then
         command ssh "$@"
@@ -1260,6 +1209,57 @@ _setup_hooks() {
     [[ $(command -v fasd) ]] && {
         eval "$(fasd --init auto)"
     }
+
+	# Short commands
+
+	[[ $(command -v aichat) ]] && {
+	    ai() {
+		 [[ "$(head -1 $HOME/.config/aichat/config.yaml | grep AES256)" == "" ]] || { sops -d -i $HOME/.config/aichat/config.yaml }
+		aichat $@
+	    }
+	}
+
+	m() {
+	    mysql -h$1 -uroot -p$(cat ~/.secrets/dbpwd) $2 -A
+	}
+
+	ntfy() {
+	    local msg="$*"
+	    curl -s \
+		--form-string "token=$PUSHOVER_TOKEN" \
+		--form-string "user=$PUSHOVER_USER" \
+		--form-string "priority=1" \
+		--form-string "message=$msg" \
+		https://api.pushover.net/1/messages.json
+	}
+
+	[[ -e $HOME/.config/fabric/patterns ]] && {
+	    yt() {
+		if [ "$#" -eq 0 ] || [ "$#" -gt 2 ]; then
+		    echo "Usage: yt [-t | --timestamps] youtube-link"
+		    echo "Use the '-t' flag to get the transcript with timestamps."
+		    return 1
+		fi
+
+		transcript_flag="--transcript"
+		if [ "$1" = "-t" ] || [ "$1" = "--timestamps" ]; then
+		    transcript_flag="--transcript-with-timestamps"
+		    shift
+		fi
+		local video_link="$1"
+		fabric -y "$video_link" $transcript_flag
+	    }
+	}
+
+	# aerospace
+	ff() {
+	    aerospace list-windows --all | fzf --bind 'enter:execute(bash -c "aerospace focus --window-id {1}")+abort'
+	}
+
+	# Tools
+	alias g=gemini
+	alias x-marimo='uvx marimo'
+	alias x-mcp-inspector='npx @mcpjam/inspector@latest'
 }
 
 _setup_vimenv() {
