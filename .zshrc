@@ -1,4 +1,4 @@
-# v1.0.1
+# v1.1.0
 # If not running interactively, don't do anything
 
 case $- in
@@ -10,137 +10,9 @@ export LANGUAGE=en_US.UTF-8
 export LANG=en_US.UTF-8
 export LC_ALL=en_US.UTF-8
 
-# We like dialogs
+# -> action continues at ### MAIN <-
 
-[[ -d $HOME/.local/bin ]] || mkdir -p $HOME/.local/bin
-export PATH=~/.local/bin:$PATH
-command -v dialog &>/dev/null || {
-    echo No dialog command. Quickly setting up. You need build-essential or what not.
-    pushd /tmp &>/dev/null
-    curl -sLO https://invisible-island.net/datafiles/release/dialog.tar.gz \
-    && d=$(tar ztvf /tmp/dialog.tar.gz| head -1 | awk '{print $NF}') \
-    && tar zxvf dialog.tar.gz &>/dev/null \
-    && cd $d \
-    && ./configure && make \
-    && mv dialog $HOME/.local/bin
-    popd &>/dev/null
-}
-
-# We like ansi effects too
-
-RED="\033[0;31m"
-GREEN="\033[0;32m"
-YELLOW="\033[1;33m"
-BLUE="\033[0;34m"
-MAGENTA="\033[0;35m"
-CYAN="\033[0;36m"
-RESET="\033[0m"
-BOLD="\033[1m"
-UNDERLINE="\033[4m"
-
-# Toggles
-
-I_WANT_COMMANDS=true
-I_WANT_PROMPT=true
-I_WANT_PLUGINS=true
-I_WANT_UPDATES=true
-
-# Do we have a setup file overring some settings?
-
-[[ -f ~/.env.cfr-setup ]] || {
-    st=$(dialog --clear \
-        --backtitle "First setup" \
-        --title "Missing CFR environment" \
-        --menu "Please select a setup option." 14 30 4  0 "No commands." 1 "NIX (sudo)" 2 "Brew (system)" 3 "LinuxBrew (user)" 2>&1 >/dev/tty)
-    reset
-    touch ~/.env.cfr-setup
-    case $st in
-    0)
-        cat <<-EOB > ~/.env.cfr-setup
-I_WANT_COMMANDS=false
-I_WANT_PROMPT=true
-I_WANT_PLUGINS=true
-I_WANT_UPDATES=false
-EOB
-    ;;
-    1)
-        I_WANT_NIX=true
-    ;;
-    2)
-        I_WANT_SYS_BREW=true
-    ;;
-    3)
-        I_WANT_USER_BREW=true
-    ;;
-    esac
-    echo
-}
-
-
-. ~/.env.cfr-setup
-
-[[ -v I_WANT_NIX ]] && {
-    [[ -d /nix ]] || {
-        sudo rm -rf ~/.nix* ~/.env.nix
-        sh <(curl -L https://nixos.org/nix/install)
-    }
-    echo I_HAVE_NIX=true >> ~/.env.cfr-setup
-    . ~/.env.cfr-setup
-}
-
-[[ -v I_WANT_USER_BREW ]] && {
-    [[ -d $HOME/.linuxbrew ]] || {
-        mkdir $HOME/.linuxbrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C $HOME/.linuxbrew
-        $HOME/.linuxbrew/bin/brew update
-    }
-    echo I_HAVE_USER_BREW=true >> ~/.env.cfr-setup
-    . ~/.env.cfr-setup
-}
-
-[[ -v I_WANT_SYS_BREW ]] && {
-    [[ -d /opt/homebrew ]] || {
-        /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-    }
-    echo I_HAVE_SYS_BREW=true >> ~/.env.cfr-setup
-    . ~/.env.cfr-setup
-}
-
-[[ -v I_HAVE_USER_BREW ]] && export PATH=$HOME/.linuxbrew/sbin:$HOME/.linuxbrew/bin:$PATH
-[[ -v I_HAVE_SYS_BREW ]] && eval "$(/opt/homebrew/bin/brew shellenv zsh)"
-
-$I_HAVE_NIX || $I_HAVE_USER_BREW || $I_HAVE_SYS_BREW || I_WANT_COMMANDS=false
-
-case "$(uname -s)" in
-    Linux)
-        export OS=Linux
-        export OSNAMES=(linux)
-    ;;
-    Darwin)
-        export OS=OSX
-        export OSNAMES=(darwin osx macos macosx)
-    ;;
-    *)
-    ;;
-esac
-case "$(uname -m)" in
-    arm64)
-        export ARCHVENDOR=arm
-        case "$OS" in
-            Linux)
-                export ARCHNAMES=(arm64)
-            ;;
-            Darwin)
-                export ARCHNAMES=(arm64 amd64 x86_64 x64)
-            ;;
-        esac
-    ;;
-    x86_64)
-        export ARCHVENDOR=intel
-        export ARCHNAMES=(amd64 x86_64 x64)
-    ;;
-    *)
-    ;;
-esac
+# Begin public functions
 
 help() {
     case "$1" in
@@ -445,22 +317,6 @@ EOB
         esac
 }
 
-# Build nix package list
-
-nix_platform=""
-[[ "$OS" != "OSX" ]] && {
-    read -r -d '' nix_platform <<'EOB'
-    dstat # better vmstat
-EOB
-}
-nix_shell=""
-# See comments below about slowness of plugins
-#[[ "$SHELL" =~ zsh ]] && {
-#    read -r -d '' nix_shell <<'EOB'
-#    zplug # zsh plugins
-#EOB
-#}
-
 refresh_commands() {
     # do not include nushell: too old
     cat <<-EOB > ~/.env.nix
@@ -517,74 +373,6 @@ EOB
         zoxide
 }
 
-$I_WANT_COMMANDS && {
-    [[ -f ~/.env.nix ]] || refresh_commands
-}
-
-# ZSH plugins
-
-# Alas, this really slows down launching a new session.
-# Specifically, the .zplug/init.zsh section below does.
-
-#$I_WANT_PLUGINS && {
-#    [[ "$SHELL" =~ zsh ]] && {
-#        [[ -f ~/.zplug/init.zsh ]] || {
-#            curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
-#        }
-#    }
-#}
-#
-#[[ -f ~/.zplug/init.zsh ]] && {
-#    source ~/.zplug/init.zsh
-#
-#    zplug 'wfxr/forgit'
-#    zplug "zsh-users/zsh-syntax-highlighting", defer:2
-#
-#    $(zplug check) || {
-#        printf "Install zplug? [y/N]: "
-#        if read -q; then
-#            echo; zplug install
-#        fi
-#    }
-#    zplug load > /dev/null
-#}
-
-[[ "$SHELL" =~ zsh ]] && { autoload -Uz compinit && compinit; }
-
-# Auto-source .source-me
-
-_my_chpwd_running=false
-autoload -U add-zsh-hook
-load-local-conf() {
-if $_my_chpwd_running; then return 0; fi; _my_chpwd_running=true;
-if [[ -f .source-me ]]; then echo "ex'ing .source-me"; source .source-me; fi; _my_chpwd_running=false;
-}
-add-zsh-hook chpwd load-local-conf
-
-# Preserve history
-
-setopt SHARE_HISTORY HIST_IGNORE_DUPS
-HISTSIZE=1000
-SAVEHIST=1000
-HISTFILE=~/.zsh_history
-preexec_custom_history() {
-  echo "$HOSTNAME $$ $(date "+%Y-%m-%dT%H:%M:%S%z") $1" >> "$HOME/.fullhistory"
-}
-preexec_functions+=(preexec_custom_history)
-
-# On Ubuntu, refresh apt db if older than a month
-
-$I_WANT_UPDATES && {
-    [[ -f /var/lib/apt/periodic/update-success-stamp ]] && {
-        freshness=$(( $(date +%s) - $(stat -c%Y /var/lib/apt/periodic/update-success-stamp) ))
-        [ $freshness -gt 2592000 ] && {
-            sudo apt-get update
-        }
-    }
-}
-
-# Prompt
-
 refresh_prompt() {
     [[ "$OS" != "OSX" ]] && {
         posh_bin=posh-linux-amd64
@@ -602,30 +390,6 @@ refresh_prompt() {
     && $HOME/.local/bin/oh-my-posh font install \
     && echo Prompt updated.
 }
-
-$I_WANT_PROMPT && {
-    [[ -f $HOME/.local/bin/oh-my-posh ]] || refresh_prompt
-}
-
-[[ -d ~/.poshthemes ]] && {
-    function zle-line-init() { }
-    [[ -f ~/.poshthemes/cfr.omp.json ]] || curl -so ~/.poshthemes/cfr.omp.json https://gist.githubusercontent.com/Fusion/97b8731cef5dd52bbe44ebd45505f2a5/raw/3a609404d8608e6c944376e91f88780025cc3f34/cfr.omp.json
-    eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/cfr.omp.json)"
-}
-
-# direnv sources a directory .envrc file
-
-[[ $(command -v direnv) ]] && {
-    eval "$(direnv hook zsh)"
-}
-
-# quick jump
-
-[[ $(command -v fasd) ]] && {
-    eval "$(fasd --init auto)"
-}
-
-# nvim goodness
 
 refresh_vim() {
     # pre-neovim 1.0 workaround
@@ -930,50 +694,69 @@ command! -nargs=0 Dag :call Dag()
 EOB
 }
 
-[[ -f ~/.local/share/nvim/site/autoload/plug.vim  ]] || {
-    sh -c 'curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
-           https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
-}
-[[ -f ~/.config/nvim/init.lua ]] || refresh_vim
-
-rvi() {
-    local target
-    [[ "$1" == "" ]] && {echo "$0 <host>|server [kill]."; return;}
-    [[ $1 == server ]] && {screen nvim --headless --listen 0.0.0.0:6666; return;}
-    [[ $1 == *.*  ]] && target=$1 || {
-        target="$(grep $1 ~/.ssh/config -A 1 | awk '/HostName/{print $2}')"
-        [[ "$target" == "" ]] && target=$1
-    }
-    action="${2:-start}"
-    case $action in
-        start)
-        [[ "$(ssh $target ps x | grep nvim | grep headless)" == "" ]] && {
-            ssh -n $target -- "$([[ -f \$HOME/.nix-profile/bin/nvim ]] && { echo \$HOME/.nix-profile/bin/nvim } || { echo \$HOME/.local/bin/nvim }) --headless --listen 0.0.0.0:6666 &>/dev/null &"
-        }
-        /Applications/neovide.app/Contents/MacOS/neovide --server $target:6666
-        ;;
-        stop|kill)
-            nvim --server $target:6666 --remote-send ':qa!<CR>'
-            return
-        ;;
-    esac
-}
-
-# also, vim everywhere
-bindkey -v
-[[ -f ~/.inputrc ]] || {
-    cat <<-EOB > ~/.inputrc
-set editing-mode vi
-set keymap vi-insert
+refresh_gitconfig() {
+    cat <<-EOB > ~/.gitconfig
+[user]
+    name = Chris F Ravenscroft
+    email = chris@voilaweb.com
+[init]
+    defaultBranch = main
+[core]
+    compression = 0
+    fsmonitor = true
+    longpaths = true
+    whitespace = -trailing-space,-space-before-tab
+    untrackedCache = true
+[diff]
+    algorithm = histogram
+    colorMoved = dimmed-zebra
+[difftool]
+    prompt = false
+[merge]
+    tool = meld
+    conflictstyle = diff3
+[mergetool]
+    keepBackup = false
+[color]
+    ui = true
+[column]
+    ui = auto
+[fetch]
+    prune = true
+    prunetags = true
+[pull]
+    rebase = interactive
+[push]
+    autoSetupRemote = true
+[includeIf "gitdir:~/.local/git/"]
+    path = ~/.local/git/gitconfig
+[rerere]
+    enabled = true
+[credential]
+    helper = cache --timeout=604800
+[rerere]
+    enabled = true
+[rebase]
+    autoSquash = true
+    autoStash = true
+    updateRefs = true
+[log]
+    abbrevCommit = true
+[alias]
+    aliases = config --get-regexp ^alias
+    undo = reset --soft HEAD~1
+    nuke = reset --hard HEAD~1
+    stash-all = stash push --include-untracked
+    amend = commit --amend --no-edit
+    unstage = restore --staged
+    lg = log --oneline --graph --decorate --all --abbrev-commit
+    fixup = "!f() { TARGET=\$(git rev-parse \$1); git commit --fixup=\$TARGET \${@:2} && GIT_SEQUENCE_EDITOR=true git rebase -i --autostash --autosquash \$TARGET^; }; f"
+[credential]
+    helper = cache --timeout=86400
+[feature]
+    manyFiles = true
 EOB
 }
-bindkey '^a' beginning-of-line
-bindkey '^e' end-of-line
-bindkey '^w' backward-kill-word
-
-# missing shell completions
-
-fpath=($HOME/.local/zsh/completions $fpath)
 
 refresh_completions() {
     dst=$(printf "%s\n" "${fpath[@]}" | grep misc)
@@ -1002,196 +785,27 @@ refresh_completions() {
     cp -f completions/zsh/* $dst/
 }
 
-# tmux smug goodness
-refresh_smug() {
-    mkdir -p ~/.config/smug
-    cat <<-EOB > ~/.config/smug/trr.yml
-session: trr
-
-windows:
-  - name: main
-    layout: tiled
-    commands:
-      - ssh voicetest-sip01.convoso.com
-      - sudo -s
-      - cd /usr/local/opensips_proxy/etc/opensips
-    panes:
-      - type: horizontal
-        commands:
-          - ssh voicetest-db02.convoso.com
-      - type: horizontal
-        commands:
-          - ssh voicetest-db01.convoso.com
-      - type: horizontal
-        commands:
-          - ssh voicetest-rtp02.convoso.com
-          - sudo -s
-          - systemctl --no-pager status rtpengine
-      - type: horizontal
-        commands:
-          - ssh voicetest-rtp01.convoso.com
-          - sudo -s
-          - systemctl --no-pager status rtpengine
-      - type: horizontal
-        commands:
-          - ssh voicetest-sip02.convoso.com
-          - sudo -s
-  - name: simulator
-    layout: tiled
-    commands:
-      - ssh cravenscroft@trr-out-sim.convoso.com
-      - sudo -s
-      - cd /root/sipp
-    panes:
-      - type: horizontal
-        commands:
-          - ssh cravenscroft@sink1-las.convoso.com
-EOB
-}
-
-[[ -d ~/.config/smug ]] || refresh_smug
-
-# ls
-
-[[ $(command -v lsd) ]] && {
-    alias ls=lsd
-}
-
-# asdf versions manager for many packages and languages
-[ -d $HOME/.asdf ] && {
-    . $HOME/.asdf/asdf.sh
-    fpath=(${ASDF_DIR}/completions $fpath)
-}
-
-[[ $(command -v mise) ]] && {
-    eval "$(mise activate zsh)"
-}
-
-# kitty integration
-
-if test -n "$KITTY_INSTALLATION_DIR"; then
-    export KITTY_SHELL_INTEGRATION="enabled"
-    autoload -Uz -- "$KITTY_INSTALLATION_DIR"/shell-integration/zsh/kitty-integration
-    kitty-integration
-    unfunction kitty-integration
-fi
-
-# certinfo
-
-$I_WANT_COMMANDS && {
-    [[ -f $HOME/.local/bin/certinfo ]] || {
-        [[ "$OS" != "OSX" ]] && {
-            certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep linux_amd64)"
-        } || {
-            certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep darwin_arm64)"
-        }
-        curl -Lo /tmp/certinfo.tgz ${certinfo_url} \
-            && sudo tar zxvf /tmp/certinfo.tgz -C $HOME/.local/bin/ certinfo \
-            && sudo chmod +x $HOME/.local/bin/certinfo
+rvi() {
+    local target
+    [[ "$1" == "" ]] && {echo "$0 <host>|server [kill]."; return;}
+    [[ $1 == server ]] && {screen nvim --headless --listen 0.0.0.0:6666; return;}
+    [[ $1 == *.*  ]] && target=$1 || {
+        target="$(grep $1 ~/.ssh/config -A 1 | awk '/HostName/{print $2}')"
+        [[ "$target" == "" ]] && target=$1
     }
-}
-
-# adjust paths
-#
-[[ -v I_HAVE_NIX ]] && {
-    [[ "$PATH" =~ .nix-profile ]] || export PATH=~/.nix-profile/bin:$PATH
-    [[ "$PATH" =~ default ]] || export PATH=/nix/var/nix/profiles/default/bin:$PATH
-}
-
-# Switches
-
-[[ $(command -v nvim) ]] && {
-    export EDITOR="nvim"
-    [[ -f $HOME/.linuxbrew/bin/nvim ]] && {
-        alias vi=~/.linuxbrew/bin/nvim
-        alias vim=~/.linuxbrew/bin/nvim
-    } || {
-        [[ -f $HOME/.nix-profile/bin/nvim ]] && {
-            alias vi=~/.nix-profile/bin/nvim
-            alias vim=~/.nix-profile/bin/nvim
-        } || {
-            alias vi=nvim
-            alias vim=nvim
+    action="${2:-start}"
+    case $action in
+        start)
+        [[ "$(ssh $target ps x | grep nvim | grep headless)" == "" ]] && {
+            ssh -n $target -- "$([[ -f \$HOME/.nix-profile/bin/nvim ]] && { echo \$HOME/.nix-profile/bin/nvim } || { echo \$HOME/.local/bin/nvim }) --headless --listen 0.0.0.0:6666 &>/dev/null &"
         }
-    }
-    alias vimdiff="nvim -d"
-}
-export VISUAL="vim"
-export PAGER="bat"
-[[ $(command -v ncdu) ]] && {
-    alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
-}
-[[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm ssh"
-[[ "$TERM" == "rio" ]] && alias ssh="TERM=xterm-256color ssh"
-[[ -d ~/.krew ]] && export PATH="${PATH}:${HOME}/.krew/bin"
-
-p=$(which tv)
-if [[ $? -eq 0 ]]; then
-    eval "$(tv init zsh)"
-else
-    p=$(which fzf)
-    if [[ $? -eq 0 ]]; then
-        [[ -v I_HAVE_NIX ]] && {
-            sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
-            if [[ "$sp" != "" ]]; then
-                while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh && source $sp/bin/../share/fzf/completion.zsh
-            fi
-        }
-        [[ -v I_HAVE_USER_BREW ]] && {
-            source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
-            source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
-        }
-        [[ -v I_HAVE_SYS_BREW ]] && {
-            source /opt/homebrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
-            source /opt/homebrew/var/homebrew/linked/fzf/shell/completion.zsh
-        }
-    fi
-fi
-
-# zoxide
-[[ $(command -v zoxide) ]] && {
-    eval "$(zoxide init zsh)"
-}
-
-# zellij
-
-function zrf () { zellij run --name "$*" --floating -- zsh -ic "$*";}
-
-# Languages, maybe
-
-[[ -f ~/.asdf/shims/go ]] && {
-    export GOPATH=~/go
-}
-[ ! -z ${GOPATH+x} -a -d $GOPATH/bin ] && export PATH=$GOPATH/bin:$PATH
-
-export NVM_DIR="$HOME/.nvm"
-[[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[[ -s "$NVM_DIR/bash_completion" ]] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
-# haskell
-[ -f "/Users/chris/.ghcup/env" ] && source "/Users/chris/.ghcup/env" # ghcup-env
-
-# meld
-alias meld="open -W -a Meld $@"
-
-# Fabric?
-[[ $(command -v fab2) ]] && {
-_complete_fab2() {
-    collection_arg=''
-    if [[ "${words}" =~ "(-c|--collection) [^ ]+" ]]; then
-        collection_arg=$MATCH
-    fi
-    reply=( $(fab2 ${=collection_arg} --complete -- ${words}) )
-}
-compctl -K _complete_fab2 + -f fab2
-}
-
-# mackup specials
-[[ -d ~/.mackup ]] || {
-    mkdir -p ~/.mackup
-
-    cat <<-EOB > ~/.mackup/cfr-dbs
-EOB
+        /Applications/neovide.app/Contents/MacOS/neovide --server $target:6666
+        ;;
+        stop|kill)
+            nvim --server $target:6666 --remote-send ':qa!<CR>'
+            return
+        ;;
+    esac
 }
 
 # interactive cd
@@ -1270,11 +884,6 @@ color() {
 function title {
     echo -ne "\033]0;"$*"\007"
 }
-
-# more git
-#git config --global core.pager "diff-so-fancy | less --tabs=4 -RFX"
-#git config --global interactive.diffFilter "diff-so-fancy --patch"
-git config --global color.ui true
 
 # man
 man() { command man $@ | col -bx | bat -l man -p }
@@ -1373,25 +982,6 @@ ntfy() {
     }
 }
 
-
-if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
-
-# bun completions
-# Not really using bun rn: [ -s "/Users/chris/.bun/_bun" ] && source "/Users/chris/.bun/_bun"
-# export BUN_INSTALL="$HOME/.bun"
-# export PATH="$BUN_INSTALL/bin:$PATH"
-
-[[ -e $HOME/.local/zshrc ]] && . $HOME/.local/zshrc
-[[ -e $HOME/.secrets.env ]] && {
-    [[ "$(head -1 $HOME/.secrets.env | grep AES256)" == "" ]] || { sops -d -i $HOME/.secrets.env }
-    . $HOME/.secrets.env
-}
-[[ -f "$HOME/.cargo/env" ]] && { . "$HOME/.cargo/env" }
-
-command -v thefuck &>/dev/null && {
-    eval $(thefuck --alias)
-}
-
 # aerospace
 ff() {
     aerospace list-windows --all | fzf --bind 'enter:execute(bash -c "aerospace focus --window-id {1}")+abort'
@@ -1439,14 +1029,444 @@ et() {
     command et "${args[@]}"
 }
 
-# Secrets
+# Begin private functions
 
-[ -f "$HOME/.local/secrets/zshrc" ] && . "$HOME/.local/secrets/zshrc"
+_we_like_dialogs() {
+    [[ -d $HOME/.local/bin ]] || mkdir -p $HOME/.local/bin
+    export PATH=~/.local/bin:$PATH
+    command -v dialog &>/dev/null || {
+        echo No dialog command. Quickly setting up. You need build-essential or what not.
+        pushd /tmp &>/dev/null
+        curl -sLO https://invisible-island.net/datafiles/release/dialog.tar.gz \
+        && d=$(tar ztvf /tmp/dialog.tar.gz| head -1 | awk '{print $NF}') \
+        && tar zxvf dialog.tar.gz &>/dev/null \
+        && cd $d \
+        && ./configure && make \
+        && mv dialog $HOME/.local/bin
+        popd &>/dev/null
+    }
+}
 
-# BEGIN opam configuration
-# This is useful if you're using opam as it adds:
-#   - the correct directories to the PATH
-#   - auto-completion for the opam binary
-# This section can be safely removed at any time if needed.
-[[ ! -r '/Users/chris/.opam/opam-init/init.zsh' ]] || source '/Users/chris/.opam/opam-init/init.zsh' > /dev/null 2> /dev/null
-# END opam configuration
+_constants() {
+    # We like ansi effects
+    RED="\033[0;31m"
+    GREEN="\033[0;32m"
+    YELLOW="\033[1;33m"
+    BLUE="\033[0;34m"
+    MAGENTA="\033[0;35m"
+    CYAN="\033[0;36m"
+    RESET="\033[0m"
+    BOLD="\033[1m"
+    UNDERLINE="\033[4m"
+}
+
+_settings() {
+    I_WANT_COMMANDS=true
+    I_WANT_PROMPT=true
+    I_WANT_PLUGINS=true
+    I_WANT_UPDATES=true
+ 
+    # Do we have a setup file overriding some settings?
+    [[ -f ~/.env.cfr-setup ]] || {
+        st=$(dialog --clear \
+            --backtitle "First setup" \
+            --title "Missing CFR environment" \
+            --menu "Please select a setup option." 14 30 4  0 "No commands." 1 "NIX (sudo)" 2 "Brew (system)" 3 "LinuxBrew (user)" 2>&1 >/dev/tty)
+        reset
+        touch ~/.env.cfr-setup
+        case $st in
+        0)
+            cat <<-EOB > ~/.env.cfr-setup
+I_WANT_COMMANDS=false
+I_WANT_PROMPT=true
+I_WANT_PLUGINS=true
+I_WANT_UPDATES=false
+EOB
+        ;;
+        1)
+            I_WANT_NIX=true
+        ;;
+        2)
+            I_WANT_SYS_BREW=true
+        ;;
+        3)
+            I_WANT_USER_BREW=true
+        ;;
+        esac
+        echo
+    }
+
+
+    . ~/.env.cfr-setup
+}
+
+_setup_packager() {
+    [[ -v I_WANT_NIX ]] && {
+        [[ -d /nix ]] || {
+            sudo rm -rf ~/.nix* ~/.env.nix
+            sh <(curl -L https://nixos.org/nix/install)
+        }
+        echo I_HAVE_NIX=true >> ~/.env.cfr-setup
+        . ~/.env.cfr-setup
+    }
+
+    [[ -v I_WANT_USER_BREW ]] && {
+        [[ -d $HOME/.linuxbrew ]] || {
+            mkdir $HOME/.linuxbrew && curl -L https://github.com/Homebrew/brew/tarball/master | tar xz --strip 1 -C $HOME/.linuxbrew
+            $HOME/.linuxbrew/bin/brew update
+        }
+        echo I_HAVE_USER_BREW=true >> ~/.env.cfr-setup
+        . ~/.env.cfr-setup
+    }
+
+    [[ -v I_WANT_SYS_BREW ]] && {
+        [[ -d /opt/homebrew ]] || {
+            /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+        }
+        echo I_HAVE_SYS_BREW=true >> ~/.env.cfr-setup
+        . ~/.env.cfr-setup
+    }
+
+    [[ -v I_HAVE_USER_BREW ]] && export PATH=$HOME/.linuxbrew/sbin:$HOME/.linuxbrew/bin:$PATH
+    [[ -v I_HAVE_SYS_BREW ]] && eval "$(/opt/homebrew/bin/brew shellenv zsh)"
+
+    $I_HAVE_NIX || $I_HAVE_USER_BREW || $I_HAVE_SYS_BREW || I_WANT_COMMANDS=false
+}
+
+_setup_platform() {
+    case "$(uname -s)" in
+        Linux)
+            export OS=Linux
+            export OSNAMES=(linux)
+        ;;
+        Darwin)
+            export OS=OSX
+            export OSNAMES=(darwin osx macos macosx)
+        ;;
+        *)
+        ;;
+    esac
+    case "$(uname -m)" in
+        arm64)
+            export ARCHVENDOR=arm
+            case "$OS" in
+                Linux)
+                    export ARCHNAMES=(arm64)
+                ;;
+                Darwin)
+                    export ARCHNAMES=(arm64 amd64 x86_64 x64)
+                ;;
+            esac
+        ;;
+        x86_64)
+            export ARCHVENDOR=intel
+            export ARCHNAMES=(amd64 x86_64 x64)
+        ;;
+        *)
+        ;;
+    esac
+
+    # Build nix package list
+    nix_platform=""
+    [[ "$OS" != "OSX" ]] && {
+        read -r -d '' nix_platform <<'EOB'
+dstat # better vmstat
+EOB
+    }
+    nix_shell=""
+    # See comments below about slowness of plugins
+    #[[ "$SHELL" =~ zsh ]] && {
+    #    read -r -d '' nix_shell <<'EOB'
+    #    zplug # zsh plugins
+#EOB
+    #}
+
+    $I_WANT_COMMANDS && {
+        [[ -f ~/.env.nix ]] || refresh_commands
+    }
+}
+
+_setup_zsh() {
+    # ZSH plugins
+    # Alas, this really slows down launching a new session.
+    # Specifically, the .zplug/init.zsh section below does.
+
+    #$I_WANT_PLUGINS && {
+    #    [[ "$SHELL" =~ zsh ]] && {
+    #        [[ -f ~/.zplug/init.zsh ]] || {
+    #            curl -sL --proto-redir -all,https https://raw.githubusercontent.com/zplug/installer/master/installer.zsh | zsh
+    #        }
+    #    }
+    #}
+    #
+    #[[ -f ~/.zplug/init.zsh ]] && {
+    #    source ~/.zplug/init.zsh
+    #
+    #    zplug 'wfxr/forgit'
+    #    zplug "zsh-users/zsh-syntax-highlighting", defer:2
+    #
+    #    $(zplug check) || {
+    #        printf "Install zplug? [y/N]: "
+    #        if read -q; then
+    #            echo; zplug install
+    #        fi
+    #    }
+    #    zplug load > /dev/null
+    #}
+
+    [[ "$SHELL" =~ zsh ]] && { autoload -Uz compinit && compinit; }
+
+    # Auto-source .source-me
+    _my_chpwd_running=false
+    autoload -U add-zsh-hook
+    load-local-conf() {
+        if $_my_chpwd_running; then return 0; fi; _my_chpwd_running=true;
+        if [[ -f .source-me ]]; then echo "ex'ing .source-me"; source .source-me; fi; _my_chpwd_running=false;
+    }
+    add-zsh-hook chpwd load-local-conf
+ 
+    # Preserve history
+    setopt SHARE_HISTORY HIST_IGNORE_DUPS
+    HISTSIZE=1000
+    SAVEHIST=1000
+    HISTFILE=~/.zsh_history
+    preexec_custom_history() {
+        echo "$HOSTNAME $$ $(date "+%Y-%m-%dT%H:%M:%S%z") $1" >> "$HOME/.fullhistory"
+    }
+    preexec_functions+=(preexec_custom_history)
+
+    fpath=($HOME/.local/zsh/completions $fpath)
+}
+
+_setup_prompt() {
+    $I_WANT_PROMPT && {
+        [[ -f $HOME/.local/bin/oh-my-posh ]] || refresh_prompt
+    }
+
+    [[ -d ~/.poshthemes ]] && {
+        function zle-line-init() { }
+        [[ -f ~/.poshthemes/cfr.omp.json ]] || curl -so ~/.poshthemes/cfr.omp.json https://gist.githubusercontent.com/Fusion/97b8731cef5dd52bbe44ebd45505f2a5/raw/3a609404d8608e6c944376e91f88780025cc3f34/cfr.omp.json
+        eval "$($HOME/.local/bin/oh-my-posh init zsh --config ~/.poshthemes/cfr.omp.json)"
+    }
+}
+
+_setup_hooks() {
+    # direnv sources a directory .envrc file
+    [[ $(command -v direnv) ]] && {
+        eval "$(direnv hook zsh)"
+    }
+
+    # quick jump
+    [[ $(command -v fasd) ]] && {
+        eval "$(fasd --init auto)"
+    }
+}
+
+_setup_vimenv() {
+    [[ -f ~/.local/share/nvim/site/autoload/plug.vim  ]] || {
+        sh -c 'curl -fLo ~/.local/share/nvim/site/autoload/plug.vim --create-dirs \
+            https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim'
+    }
+    [[ -f ~/.config/nvim/init.lua ]] || refresh_vim
+
+    ### END WILDLANDS
+
+    # also, vim everywhere
+    bindkey -v
+    [[ -f ~/.inputrc ]] || {
+        cat <<-EOB > ~/.inputrc
+    set editing-mode vi
+    set keymap vi-insert
+EOB
+    }
+    bindkey '^a' beginning-of-line
+    bindkey '^e' end-of-line
+    bindkey '^w' backward-kill-word
+
+    [[ $(command -v nvim) ]] && {
+        export EDITOR="nvim"
+        [[ -f $HOME/.linuxbrew/bin/nvim ]] && {
+            alias vi=~/.linuxbrew/bin/nvim
+            alias vim=~/.linuxbrew/bin/nvim
+        } || {
+            [[ -f $HOME/.nix-profile/bin/nvim ]] && {
+                alias vi=~/.nix-profile/bin/nvim
+                alias vim=~/.nix-profile/bin/nvim
+            } || {
+                alias vi=nvim
+                alias vim=nvim
+            }
+        }
+        alias vimdiff="nvim -d"
+    }
+}
+
+_setup_improved_commands() {
+    # ls
+    [[ $(command -v lsd) ]] && {
+        alias ls=lsd
+    }
+
+    # asdf versions manager for many packages and languages
+    [ -d $HOME/.asdf ] && {
+        . $HOME/.asdf/asdf.sh
+        fpath=(${ASDF_DIR}/completions $fpath)
+    }
+
+    [[ $(command -v mise) ]] && {
+        eval "$(mise activate zsh)"
+    }
+
+    # certinfo
+    $I_WANT_COMMANDS && {
+        [[ -f $HOME/.local/bin/certinfo ]] || {
+            [[ "$OS" != "OSX" ]] && {
+                certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep linux_amd64)"
+            } || {
+                certinfo_url="$(curl -sL https://api.github.com/repos/pete911/certinfo/releases/latest | jq -r '.assets[].browser_download_url' | grep darwin_arm64)"
+            }
+            curl -Lo /tmp/certinfo.tgz ${certinfo_url} \
+                && sudo tar zxvf /tmp/certinfo.tgz -C $HOME/.local/bin/ certinfo \
+                && sudo chmod +x $HOME/.local/bin/certinfo
+        }
+    }
+
+    # adjust paths
+    #
+    [[ -v I_HAVE_NIX ]] && {
+        [[ "$PATH" =~ .nix-profile ]] || export PATH=~/.nix-profile/bin:$PATH
+        [[ "$PATH" =~ default ]] || export PATH=/nix/var/nix/profiles/default/bin:$PATH
+    }
+
+    # Switches
+
+    export VISUAL="vim"
+    export PAGER="bat"
+    [[ $(command -v ncdu) ]] && {
+        alias du="ncdu --color dark -rr -x --exclude .git --exclude node_modules"
+    }
+    [[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm ssh"
+    [[ "$TERM" == "rio" ]] && alias ssh="TERM=xterm-256color ssh"
+    [[ -d ~/.krew ]] && export PATH="${PATH}:${HOME}/.krew/bin"
+
+    p=$(which tv)
+    if [[ $? -eq 0 ]]; then
+        eval "$(tv init zsh)"
+    else
+        p=$(which fzf)
+        if [[ $? -eq 0 ]]; then
+            [[ -v I_HAVE_NIX ]] && {
+                sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
+                if [[ "$sp" != "" ]]; then
+                    while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh && source $sp/bin/../share/fzf/completion.zsh
+                fi
+            }
+            [[ -v I_HAVE_USER_BREW ]] && {
+                source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
+                source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
+            }
+            [[ -v I_HAVE_SYS_BREW ]] && {
+                source /opt/homebrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
+                source /opt/homebrew/var/homebrew/linked/fzf/shell/completion.zsh
+            }
+        fi
+    fi
+
+    # zoxide
+    [[ $(command -v zoxide) ]] && {
+        eval "$(zoxide init zsh)"
+    }
+
+    # zellij
+    function zrf () { zellij run --name "$*" --floating -- zsh -ic "$*";}
+
+    command -v thefuck &>/dev/null && {
+        eval $(thefuck --alias)
+    }
+}
+
+_setup_devenv() {
+    #git config --global core.pager "diff-so-fancy | less --tabs=4 -RFX"
+    #git config --global interactive.diffFilter "diff-so-fancy --patch"
+    git config --global color.ui true
+    git config --global merge.conflictstyle diff3
+
+    # Languages, maybe
+
+    [[ -f ~/.asdf/shims/go ]] && {
+        export GOPATH=~/go
+    }
+    [ ! -z ${GOPATH+x} -a -d $GOPATH/bin ] && export PATH=$GOPATH/bin:$PATH
+
+    export NVM_DIR="$HOME/.nvm"
+    [[ -s "$NVM_DIR/nvm.sh" ]] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
+    [[ -s "$NVM_DIR/bash_completion" ]] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+    # haskell
+    [ -f "/Users/chris/.ghcup/env" ] && source "/Users/chris/.ghcup/env" # ghcup-env
+
+    # meld
+    alias meld="open -W -a Meld $@"
+
+    # Fabric?
+    [[ $(command -v fab2) ]] && {
+        _complete_fab2() {
+            collection_arg=''
+            if [[ "${words}" =~ "(-c|--collection) [^ ]+" ]]; then
+                collection_arg=$MATCH
+            fi
+            reply=( $(fab2 ${=collection_arg} --complete -- ${words}) )
+        }
+        compctl -K _complete_fab2 + -f fab2
+    }
+
+    # mackup specials
+    [[ -d ~/.mackup ]] || {
+        mkdir -p ~/.mackup
+
+        cat <<-EOB > ~/.mackup/cfr-dbs
+EOB
+    }
+
+
+    if [ -e $HOME/.nix-profile/etc/profile.d/nix.sh ]; then . $HOME/.nix-profile/etc/profile.d/nix.sh; fi # added by Nix installer
+
+    # bun completions
+    # Not really using bun rn: [ -s "/Users/chris/.bun/_bun" ] && source "/Users/chris/.bun/_bun"
+    # export BUN_INSTALL="$HOME/.bun"
+    # export PATH="$BUN_INSTALL/bin:$PATH"
+
+    [[ -e $HOME/.local/zshrc ]] && . $HOME/.local/zshrc
+    [[ -e $HOME/.secrets.env ]] && {
+        [[ "$(head -1 $HOME/.secrets.env | grep AES256)" == "" ]] || { sops -d -i $HOME/.secrets.env }
+        . $HOME/.secrets.env
+    }
+    [[ -f "$HOME/.cargo/env" ]] && { . "$HOME/.cargo/env" }
+}
+
+_setup_os_specific() {
+    # On Ubuntu, refresh apt db if older than a month
+    $I_WANT_UPDATES && {
+        [[ -f /var/lib/apt/periodic/update-success-stamp ]] && {
+            freshness=$(( $(date +%s) - $(stat -c%Y /var/lib/apt/periodic/update-success-stamp) ))
+            [ $freshness -gt 2592000 ] && {
+                sudo apt-get update
+            }
+        }
+    }
+}
+
+### MAIN
+
+_we_like_dialogs
+_constants
+_settings
+_setup_packager
+_setup_platform
+_setup_zsh
+_setup_prompt
+_setup_hooks
+_setup_vimenv
+_setup_improved_commands
+_setup_devenv
+_setup_os_specific
