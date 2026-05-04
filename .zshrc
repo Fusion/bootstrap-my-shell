@@ -1466,7 +1466,7 @@ _setup_platform
 _setup_zsh
 _setup_prompt
 _setup_hooks
-_setup_vimenv
 _setup_improved_commands
+_setup_vimenv
 _setup_devenv
 _setup_os_specific
