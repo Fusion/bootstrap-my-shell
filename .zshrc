@@ -1299,6 +1299,30 @@ EOB
         }
         alias vimdiff="nvim -d"
     }
+
+    p=$(which tv)
+    if [[ $? -eq 0 ]]; then
+        eval "$(tv init zsh)"
+    else
+        p=$(which fzf)
+        if [[ $? -eq 0 ]]; then
+            [[ -v I_HAVE_NIX ]] && {
+                sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
+                if [[ "$sp" != "" ]]; then
+                    while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh && source $sp/bin/../share/fzf/completion.zsh
+                fi
+            }
+            [[ -v I_HAVE_USER_BREW ]] && {
+                source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
+                source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
+            }
+            [[ -v I_HAVE_SYS_BREW ]] && {
+                source /opt/homebrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
+                source /opt/homebrew/var/homebrew/linked/fzf/shell/completion.zsh
+            }
+        fi
+    fi
+
 }
 
 _setup_improved_commands() {
@@ -1348,29 +1372,6 @@ _setup_improved_commands() {
     [[ "$TERM" == "xterm-kitty" ]] && alias ssh="TERM=xterm ssh"
     [[ "$TERM" == "rio" ]] && alias ssh="TERM=xterm-256color ssh"
     [[ -d ~/.krew ]] && export PATH="${PATH}:${HOME}/.krew/bin"
-
-    p=$(which tv)
-    if [[ $? -eq 0 ]]; then
-        eval "$(tv init zsh)"
-    else
-        p=$(which fzf)
-        if [[ $? -eq 0 ]]; then
-            [[ -v I_HAVE_NIX ]] && {
-                sp="$(find /nix/store -maxdepth 1 -type d -name '*-fzf-*' -not -name '*man')"
-                if [[ "$sp" != "" ]]; then
-                    while true; do q=$(readlink $p); [[ "" == "$q" ]] && break; p=$q; done; source $sp/bin/../share/fzf/key-bindings.zsh && source $sp/bin/../share/fzf/completion.zsh
-                fi
-            }
-            [[ -v I_HAVE_USER_BREW ]] && {
-                source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
-                source $HOME/.linuxbrew/var/homebrew/linked/fzf/shell/completion.zsh
-            }
-            [[ -v I_HAVE_SYS_BREW ]] && {
-                source /opt/homebrew/var/homebrew/linked/fzf/shell/key-bindings.zsh
-                source /opt/homebrew/var/homebrew/linked/fzf/shell/completion.zsh
-            }
-        fi
-    fi
 
     # zoxide
     [[ $(command -v zoxide) ]] && {
