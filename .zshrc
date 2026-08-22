@@ -373,6 +373,22 @@ EOB
         zoxide
 }
 
+refresh_atuin() {
+    mkdir -p ~/.config/atuin
+    cat <<-EOB > ~/.config/atuin/config.toml
+search_mode = "daemon-fuzzy"
+style = "full"
+keymap_mode = "emacs"
+
+[ai]
+enabled = true
+
+[daemon]
+enabled = true
+autostart = true
+EOB
+}
+
 refresh_prompt() {
     [[ "$OS" != "OSX" ]] && {
         posh_bin=posh-linux-amd64
@@ -833,6 +849,7 @@ gitid() {
 refresh_all() {
     refresh_commands
     refresh_prompt
+    refresh_atuin
     refresh_vim
     refresh_smug
 }
@@ -1305,7 +1322,7 @@ EOB
 
     if [[ -f $HOME/.atuin/bin/atuin ]]; then
         . "$HOME/.atuin/bin/env"
-        eval "$($HOME/.atuin/bin/atuin init zsh)"
+        eval "$($HOME/.atuin/bin/atuin init zsh --disable-up-arrow)"
     else
         p=$(which tv)
         if [[ $? -eq 0 ]]; then
