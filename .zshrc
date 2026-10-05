@@ -288,7 +288,6 @@ CFR various help items:
 -----------------------
 forgit: interactive git -- \`ga\` etc. (for more: \`aliases\`)
 dotfiles: manage dotfiles git repo
-smug: manage tmux layouts
 icd: interactive cd using xplr
 refresh_*: re-sync environment
 install_*: install important bits
@@ -326,7 +325,6 @@ with import <nixpkgs> {}; [
     rlwrap # wrap commands in readline
     git
     tig # yeah gitui and tig suit a different need
-    smug # tmuxinator-like
     pdsh # multi ssh
     broot # tree explorer
     tealdeer # short examples
@@ -403,7 +401,7 @@ refresh_prompt() {
     && chmod u+rw ~/.poshthemes/*.omp.* \
     && rm ~/.poshthemes/themes.zip \
     && echo "\nInstall Inconsolata font" \
-    && $HOME/.local/bin/oh-my-posh font install \
+    && $HOME/.local/bin/oh-my-posh font install Inconsolata \
     && echo Prompt updated.
 }
 
@@ -851,7 +849,6 @@ refresh_all() {
     refresh_prompt
     refresh_atuin
     refresh_vim
-    refresh_smug
 }
 
 install_et() {
@@ -1003,6 +1000,11 @@ _we_like_dialogs() {
     command -v dialog &>/dev/null || {
         echo No dialog command. Quickly setting up. You need build-essential or what not.
         pushd /tmp &>/dev/null
+        [[ "$OS" != "OSX" ]] && {
+            [[ ! -f /usr/include/curses.h ]] && {
+                sudo apt install libncurses-dev
+            }
+        }
         curl -sLO https://invisible-island.net/datafiles/release/dialog.tar.gz \
         && d=$(tar ztvf /tmp/dialog.tar.gz| head -1 | awk '{print $NF}') \
         && tar zxvf dialog.tar.gz &>/dev/null \
@@ -1490,8 +1492,20 @@ _setup_packager
 _setup_platform
 _setup_zsh
 _setup_prompt
-_setup_hooks
 _setup_improved_commands
+_setup_hooks
 _setup_vimenv
 _setup_devenv
 _setup_os_specific
+export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+export PATH="/opt/homebrew/opt/mysql-client/bin:$PATH"
+
+# Added by cua-driver-rs installer — see https://github.com/trycua/cua
+export PATH="/Users/chris/.local/bin:$PATH"
+
+# dcg: warn if hook was silently removed from Claude Code settings
+if command -v dcg &>/dev/null && command -v jq &>/dev/null; then
+  if [ -f "$HOME/.claude/settings.json" ] &&      ! jq -e '.hooks.PreToolUse[]? | select(.hooks[]?.command | test("dcg\"?$"))'        "$HOME/.claude/settings.json" &>/dev/null; then
+    printf '\033[1;33m[dcg] Hook missing from ~/.claude/settings.json — run: dcg install\033[0m\n'
+  fi
+fi
